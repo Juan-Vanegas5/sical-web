@@ -3,480 +3,334 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SICAL — Sistema Inteligente de Captación y Aprovechamiento de Lluvia</title>
-<meta name="description" content="SICAL capta el agua lluvia de las cubiertas de Bogotá, la trata y la entrega a los usos no potables de la edificación, usando el mismo circuito para enfriar salas de servidores. Todo instrumentado y auditable desde un tablero.">
+<title>SICAL S.A.S. — El agua que cae, trabaja</title>
+<meta name="description" content="SICAL S.A.S. diseña, monta y mantiene sistemas de captación de agua lluvia y enfriamiento líquido para servidores en edificaciones de Bogotá. Un solo sistema de agua, medido y auditable.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Literata:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   /* ---------------------------------------------------------------
-     TOKENS — single committed look: an operations console
+     TOKENS — light, water-blue, matched to the SICAL logo
+     (#047BE1 cloud, #064D6D tank/ink, sampled directly from logo.png)
   --------------------------------------------------------------- */
   :root{
-    --void: #06090a;
-    --panel: #0c1416;
-    --panel-raised: #11191c;
-    --panel-hi: #162124;
-    --ink: #e9f5f1;
-    --ink-soft: #a7c0ba;
-    --ink-faint: #5c716c;
-    --amber: #ffb224;
-    --amber-soft: #cf9a4e;
-    --cyan: #49e3c6;
-    --cyan-soft: #2f8f7c;
-    --alarm: #ff5a3c;
-    --line: rgba(233,245,241,0.14);
-    --line-soft: rgba(233,245,241,0.07);
-    --line-strong: rgba(233,245,241,0.26);
-    --shadow: 0 30px 70px -34px rgba(0,0,0,0.8);
-    --glow-amber: 0 0 0 1px rgba(255,178,36,0.4), 0 20px 46px -22px rgba(255,178,36,0.38);
-    --glow-cyan: 0 0 0 1px rgba(73,227,198,0.38), 0 20px 46px -22px rgba(73,227,198,0.34);
+    --ice: #F2F8FF;
+    --paper: #FFFFFF;
+    --foam: #E6F3FF;
+    --deep: #063247;
+    --deep-2: #041F2C;
+    --azure: #047BE1;
+    --azure-dim: #0A6A9D;
+    --azure-deep: #0659A3;
+    --sky: #2DA7FF;
+    --sky-soft: #D7ECFF;
+    --sky-softer: #EEF7FF;
+    --ink: #0B2534;
+    --ink-soft: #3E5E6E;
+    --ink-faint: #7793A1;
+    --line: rgba(6,50,71,0.13);
+    --line-strong: rgba(6,50,71,0.24);
+    --shadow: 0 26px 60px -32px rgba(6,58,82,0.35);
+    --shadow-lg: 0 34px 80px -30px rgba(6,58,82,0.4);
+    --glow: 0 0 0 1px rgba(4,123,225,0.3), 0 20px 46px -20px rgba(4,123,225,0.35);
 
-    --font-display: "Unbounded", "Arial Narrow", sans-serif;
-    --font-body: "Literata", Georgia, "Times New Roman", serif;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Figtree", -apple-system, "Segoe UI", sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
 
-  /* ---------------------------------------------------------------
-     RESET / BASE
-  --------------------------------------------------------------- */
   *,*::before,*::after{ box-sizing: border-box; }
   html{ scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
   body{
-    margin:0;
-    background: var(--void);
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 17px;
-    line-height: 1.62;
+    margin:0; background: var(--ice); color: var(--ink);
+    font-family: var(--font-body); font-size: 17px; line-height: 1.62;
     -webkit-font-smoothing: antialiased;
-    position: relative;
-    background-image:
-      radial-gradient(ellipse 1200px 600px at 12% -10%, rgba(73,227,198,0.07), transparent 60%),
-      radial-gradient(ellipse 900px 500px at 92% 8%, rgba(255,178,36,0.05), transparent 55%),
-      repeating-linear-gradient(0deg, rgba(233,245,241,0.035) 0 1px, transparent 1px 44px),
-      repeating-linear-gradient(90deg, rgba(233,245,241,0.035) 0 1px, transparent 1px 44px);
-  }
-  /* scanline + grain atmosphere, decorative, behind content */
-  body::before{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:1;
-    background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.26) 0 1px, transparent 1px 3px);
-    opacity:.1; mix-blend-mode:overlay;
-  }
-  body::after{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.5;
-    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="140" height="140" filter="url(%23n)" opacity="0.05"/></svg>');
   }
   img{ max-width:100%; display:block; }
   h1,h2,h3,h4{ margin:0; text-wrap: balance; }
   p{ margin:0; }
   a{ color: inherit; }
   ul{ margin:0; padding:0; list-style:none; }
-  ::selection{ background: var(--amber); color: var(--void); }
+  ::selection{ background: var(--azure); color: #fff; }
   .container{ width:100%; max-width: 1180px; margin: 0 auto; padding: 0 28px; position:relative; z-index:2; }
   @media (max-width: 640px){ .container{ padding: 0 20px; } }
 
   .eyebrow{
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--amber);
-    display:flex;
-    align-items:center;
-    gap: 9px;
+    font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--azure);
+    display:flex; align-items:center; gap: 10px;
   }
-  .eyebrow .n{ opacity:.6; }
-  .eyebrow::before, .eyebrow::after{ content:"—"; opacity:.4; }
+  .eyebrow .n{ opacity:.55; }
+  .eyebrow::before{ content:""; width:16px; height:1.5px; background: var(--azure); opacity:.5; }
 
-  .section-head{
-    display:flex;
-    flex-direction:column;
-    gap: 14px;
-    max-width: 700px;
-    margin: 18px 0 52px;
-  }
+  .section-head{ display:flex; flex-direction:column; gap: 14px; max-width: 700px; margin: 16px 0 50px; }
   .section-head h2{
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.7rem, 1.25rem + 1.9vw, 2.5rem);
-    letter-spacing: -0.01em;
-    color: var(--ink);
+    font-family: var(--font-display); font-weight: 600; color: var(--deep);
+    font-size: clamp(1.7rem, 1.2rem + 2vw, 2.7rem); letter-spacing: -0.01em;
   }
-  .section-head p{ color: var(--ink-soft); font-size: 1.05rem; }
+  .section-head p{ color: var(--ink-soft); font-size: 1.06rem; }
 
   section{ position:relative; z-index:2; }
-  .band{ padding: 96px 0; border-top: 1px solid var(--line-soft); background: var(--void); }
+  .band{ padding: 92px 0; }
+  .band-ice{ background: var(--ice); }
+  .band-foam{ background: var(--foam); }
+  .band-paper{ background: var(--paper); }
 
-  /* HUD corner-bracket treatment for whole sections */
-  .bracketed{ position:relative; }
-  .bracketed::before, .bracketed::after{
-    content:""; position:absolute; top: 40px; width:20px; height:20px; opacity:.7;
-  }
-  .bracketed::before{ left: 28px; border-top:1.5px solid var(--cyan-soft); border-left:1.5px solid var(--cyan-soft); }
-  .bracketed::after{ right: 28px; border-top:1.5px solid var(--cyan-soft); border-right:1.5px solid var(--cyan-soft); }
+  .wave{ display:block; width:100%; height:auto; margin-bottom:-1px; }
 
   .btn{
-    font-family: var(--font-mono);
-    font-size: 0.84rem;
-    letter-spacing: 0.04em;
-    padding: 14px 22px;
-    border-radius: 3px;
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    cursor:pointer;
-    text-decoration:none;
-    transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease, border-color .25s ease;
-    border: 1px solid transparent;
+    font-family: var(--font-body); font-weight:600; font-size: 0.96rem;
+    padding: 14px 24px; border-radius: 999px; display:inline-flex; align-items:center; gap:9px;
+    cursor:pointer; text-decoration:none; transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+    border: 1.5px solid transparent;
   }
   .btn:hover{ transform: translateY(-2px); }
-  .btn-primary{ background: var(--amber); color: #1a1205; border-color: var(--amber); font-weight:600; }
-  .btn-primary:hover{ box-shadow: var(--glow-amber); }
-  .btn-ghost{ border-color: var(--line-strong); color: var(--ink); }
-  .btn-ghost:hover{ border-color: var(--cyan); color: var(--cyan); }
-
-  /* ---------------------------------------------------------------
-     TICKER — decorative live-readout strip
-  --------------------------------------------------------------- */
-  .ticker{
-    position: fixed; top:0; left:0; right:0; z-index: 70;
-    height: 30px; overflow:hidden;
-    background: #040708;
-    border-bottom: 1px solid var(--line-soft);
-    display:flex; align-items:center;
-  }
-  .ticker-track{
-    display:flex; align-items:center; gap:46px; white-space:nowrap;
-    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing:.06em; color: var(--ink-faint);
-    animation: ticker 32s linear infinite;
-    padding-left: 46px;
-  }
-  .ticker-track span{ color: var(--cyan-soft); }
-  .ticker-track b{ color: var(--ink-soft); font-weight:500; }
-  @keyframes ticker{ from{ transform: translateX(0); } to{ transform: translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce){ .ticker-track{ animation:none; } }
-
-  .live-dot{
-    width:6px; height:6px; border-radius:50%; background: var(--amber); display:inline-block;
-    box-shadow: 0 0 0 0 rgba(255,178,36,0.6); animation: pulse 1.8s ease-in-out infinite;
-  }
-  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,178,36,0.5);} 50%{ box-shadow:0 0 0 5px rgba(255,178,36,0);} }
-  @media (prefers-reduced-motion: reduce){ .live-dot{ animation:none; } }
+  .btn-primary{ background: var(--azure); color:#fff; }
+  .btn-primary:hover{ box-shadow: var(--glow); background: var(--azure-deep); }
+  .btn-ghost{ border-color: rgba(255,255,255,0.4); color:#fff; }
+  .btn-ghost:hover{ border-color:#fff; background: rgba(255,255,255,0.08); }
+  .btn-ghost-dark{ border-color: var(--line-strong); color: var(--deep); }
+  .btn-ghost-dark:hover{ border-color: var(--azure); color: var(--azure); }
 
   /* ---------------------------------------------------------------
      NAV
   --------------------------------------------------------------- */
   .nav{
-    position: fixed; top:30px; left:0; right:0; z-index: 60;
-    background: rgba(6,9,10,0.86);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line-soft);
+    position: sticky; top:0; left:0; right:0; z-index: 60;
+    background: rgba(242,248,255,0.86); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
   }
-  .nav-inner{
-    max-width: 1180px; margin: 0 auto; padding: 13px 28px;
-    display:flex; align-items:center; justify-content:space-between; gap: 24px;
-  }
+  .nav-inner{ max-width: 1180px; margin:0 auto; padding: 13px 28px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
   .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
-  .brand-chip{
-    background:#fff; border-radius:4px; padding: 4px 6px 2px; border:1px solid rgba(255,178,36,0.4);
-    display:flex; align-items:center; line-height:0;
-  }
-  .brand-chip img{ height:19px; width:auto; }
-  .brand-word{ font-family: var(--font-mono); font-size:0.9rem; letter-spacing:0.07em; color:var(--ink); }
-  .brand-word em{ font-style:normal; color: var(--amber); }
-  .navlinks{
-    display:flex; gap: 2px; overflow-x:auto;
-    font-family: var(--font-mono); font-size: 0.75rem; letter-spacing:.02em;
-    scrollbar-width:none;
-  }
-  .navlinks::-webkit-scrollbar{ display:none; }
-  .navlinks a{
-    color: var(--ink-faint); text-decoration:none; white-space:nowrap;
-    padding: 8px 11px; border-radius: 2px; transition: color .2s ease, background .2s ease;
-  }
-  .navlinks a:hover{ color: var(--ink); }
-  .navlinks a.active{ color: var(--amber); background: rgba(255,178,36,0.08); }
-  @media (max-width: 860px){ .navlinks{ max-width: 44vw; } }
-  @media (max-width: 560px){ .navlinks{ display:none; } }
+  .brand img{ height:30px; width:auto; }
+  .brand-word{ font-family: var(--font-display); font-weight:600; font-size:1.08rem; color: var(--deep); }
+  .brand-word em{ font-style:normal; color: var(--azure); }
+  .navlinks{ display:flex; align-items:center; gap: 4px; font-size: 0.92rem; font-weight:500; }
+  .navlinks a{ color: var(--ink-soft); text-decoration:none; padding: 8px 14px; border-radius:999px; transition: color .2s ease, background .2s ease; white-space:nowrap; }
+  .navlinks a:hover{ color: var(--azure); background: var(--sky-soft); }
+  .navlinks a.tab-alt{ color: var(--paper); background: var(--deep); margin-left:6px; }
+  .navlinks a.tab-alt:hover{ background: var(--azure-deep); color:#fff; }
+  @media (max-width: 760px){ .navlinks .nav-anchor{ display:none; } }
 
   /* ---------------------------------------------------------------
      HERO
   --------------------------------------------------------------- */
   .hero{
-    padding: 196px 0 100px;
-    overflow:hidden;
-    position:relative;
+    position:relative; overflow:hidden; color:#fff;
+    background:
+      radial-gradient(ellipse 900px 520px at 85% -10%, rgba(45,167,255,0.35), transparent 60%),
+      radial-gradient(ellipse 700px 500px at -5% 110%, rgba(45,167,255,0.22), transparent 55%),
+      linear-gradient(170deg, #052C40 0%, #063247 46%, #0A4A69 100%);
+    padding: 72px 0 0;
   }
-  #rain{ position:absolute; inset:0; width:100%; height:100%; opacity:.6; z-index:1; }
-  .hero-inner{ position:relative; z-index:2; }
-  .hero-top{
-    display:flex; align-items:flex-start; justify-content:space-between; gap: 40px;
-    margin-bottom: 44px; flex-wrap:wrap;
+  .hero-inner{ padding: 76px 0 110px; }
+  .hero-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:40px; margin-bottom:40px; flex-wrap:wrap; }
+  .hero-badge{
+    display:inline-flex; align-items:center; gap:8px; font-family: var(--font-mono); font-size:0.74rem;
+    letter-spacing:.05em; text-transform:uppercase; color:#BFE4FF; border:1px solid rgba(191,228,255,0.35);
+    border-radius:999px; padding:7px 14px 7px 10px;
   }
-  .hero-logo{
-    background:#fff; border-radius: 6px; padding: 12px 16px 8px; border:1px solid rgba(255,178,36,0.45);
-    box-shadow: var(--shadow);
-  }
-  .hero-logo img{ height: 40px; width:auto; }
-  .boot-line{
-    font-family: var(--font-mono); font-size:0.78rem; color: var(--cyan); letter-spacing:.04em;
-    margin-bottom: 14px; display:flex; align-items:center; gap:8px;
-  }
+  .hero-badge .dot{ width:6px; height:6px; border-radius:50%; background:#2DA7FF; }
   .hero h1{
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(2.4rem, 1.5rem + 4vw, 5rem);
-    line-height: 0.98;
-    letter-spacing: -0.01em;
-    max-width: 15ch;
-    margin: 0 0 26px;
-    color: var(--ink);
+    font-family: var(--font-display); font-weight: 600; letter-spacing:-0.01em;
+    font-size: clamp(2.5rem, 1.7rem + 3.4vw, 4.6rem); line-height: 1.04; max-width: 15ch; margin: 22px 0 26px;
   }
-  .hero h1 em{ font-style:normal; color: var(--amber); }
-  .hero-sub{
-    font-size: 1.2rem;
-    max-width: 54ch;
-    color: var(--ink-soft);
-    margin-bottom: 40px;
-  }
+  .hero h1 em{ font-style:italic; font-weight:500; color:#8FD3FF; }
+  .hero-sub{ font-size: 1.22rem; max-width: 56ch; color:#CFE6F2; margin-bottom: 38px; }
   .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom: 64px; }
-  .hero-facts{
-    display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
-    gap: 1px; background: var(--line-soft); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden;
-  }
-  .hero-facts div{ padding: 18px 20px; background: rgba(12,20,22,0.7); }
-  .hero-facts b{
-    display:block; font-family: var(--font-display); font-weight:700;
-    font-size: 1.9rem; color: var(--ink); font-variant-numeric: tabular-nums;
-  }
-  .hero-facts span{ font-family: var(--font-mono); font-size:0.74rem; color: var(--ink-faint); letter-spacing:.02em; }
+  .hero-facts{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:1px; background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.14); border-radius:14px; overflow:hidden; }
+  .hero-facts div{ padding:20px 22px; background: rgba(255,255,255,0.05); }
+  .hero-facts b{ display:block; font-family: var(--font-display); font-weight:700; font-size:2rem; color:#fff; }
+  .hero-facts span{ font-size:0.82rem; color:#9FC4D6; }
 
   /* ---------------------------------------------------------------
-     REVEAL (below-fold only — hero/fold content never gated on JS)
+     REVEAL
   --------------------------------------------------------------- */
-  .reveal{ opacity:0; transform: translateY(20px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal{ opacity:0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
   .reveal.is-visible{ opacity:1; transform:none; }
-  @media (prefers-reduced-motion: reduce){
-    .reveal{ opacity:1 !important; transform:none !important; transition:none !important; }
-  }
+  @media (prefers-reduced-motion: reduce){ .reveal{ opacity:1 !important; transform:none !important; transition:none !important; } }
 
   /* ---------------------------------------------------------------
-     PANEL — base card/box unit used across sections
+     CARD / PANEL
   --------------------------------------------------------------- */
-  .panel{
-    background: var(--panel-raised); border:1px solid var(--line); border-radius:8px;
-    position:relative; box-shadow: var(--shadow);
-  }
-  .panel::before, .panel::after{
-    content:""; position:absolute; width:10px; height:10px; pointer-events:none; opacity:0;
-    transition: opacity .25s ease;
-  }
-  .panel::before{ top:-1px; left:-1px; border-top:1.5px solid var(--amber); border-left:1.5px solid var(--amber); }
-  .panel::after{ bottom:-1px; right:-1px; border-bottom:1.5px solid var(--amber); border-right:1.5px solid var(--amber); }
-  .panel:hover::before, .panel:hover::after{ opacity:1; }
+  .panel{ background: var(--paper); border:1px solid var(--line); border-radius:16px; box-shadow: var(--shadow); transition: transform .3s ease, box-shadow .3s ease; }
+  .panel:hover{ transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 
-  /* ---------------------------------------------------------------
-     PROBLEMA
-  --------------------------------------------------------------- */
-  .problema-grid{ display:grid; grid-template-columns: 1.1fr 1.6fr; gap: 50px; align-items:start; }
-  @media (max-width: 860px){ .problema-grid{ grid-template-columns:1fr; } }
-  .locale{
-    font-family: var(--font-mono); font-size:0.85rem; color: var(--ink-soft);
-    padding: 20px;
+  /* quienes somos */
+  .about-grid{ display:grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items:start; }
+  @media (max-width: 920px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-copy p{ color: var(--ink-soft); font-size:1.05rem; margin-bottom:16px; }
+  .about-copy p:last-child{ margin-bottom:0; }
+  .quote-slogan{
+    font-family: var(--font-display); font-style:italic; font-weight:500; color: var(--deep);
+    font-size: 1.5rem; border-left:3px solid var(--azure); padding-left:20px; margin: 26px 0;
   }
-  .locale dt{ color: var(--ink-faint); font-size:0.72rem; text-transform:uppercase; letter-spacing:.07em; margin-top:14px; }
-  .locale dt:first-child{ margin-top:0; }
-  .locale dd{ margin:2px 0 0; color: var(--ink); }
+  .id-card{ padding:26px 28px; }
+  .id-card dl{ display:grid; grid-template-columns: auto 1fr; gap: 13px 20px; font-size:0.94rem; }
+  .id-card dt{ font-family: var(--font-mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; color: var(--azure); white-space:nowrap; padding-top:2px; }
+  .id-card dd{ margin:0; color: var(--ink-soft); }
 
-  .prob-groups{ display:flex; flex-direction:column; gap:16px; }
-  .prob-group{ padding: 22px 24px; }
-  .prob-group header{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
-  .prob-group h3{ font-family:var(--font-display); font-weight:500; font-size:1.02rem; color: var(--ink); }
-  .prob-group .count{ font-family:var(--font-mono); font-size:0.76rem; color: var(--cyan); white-space:nowrap; }
-  .prob-group ul{ display:flex; flex-direction:column; gap:8px; }
-  .prob-group li{ color: var(--ink-soft); font-size:0.98rem; padding-left:18px; position:relative; }
-  .prob-group li::before{
-    content:""; position:absolute; left:0; top:0.6em; width:6px; height:6px;
-    background: var(--amber); border-radius:1px;
-  }
-
-  /* ---------------------------------------------------------------
-     CARD GRIDS (valor propuesto / servicios)
-  --------------------------------------------------------------- */
-  .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 20px; }
-  .card{ padding: 26px 24px; transition: transform .3s ease; }
-  .card:hover{ transform: translateY(-4px); }
-  .card .num{ font-family:var(--font-mono); font-size:0.76rem; color: var(--amber); display:block; margin-bottom:14px; }
-  .card h3{ font-family:var(--font-display); font-weight:500; font-size:1.05rem; margin-bottom:10px; color: var(--ink); }
+  /* value / cards grid */
+  .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(255px,1fr)); gap: 20px; }
+  .card{ padding: 28px 26px; }
+  .card .num{ font-family: var(--font-mono); font-size:0.76rem; color: var(--azure); display:block; margin-bottom:16px; }
+  .card h3{ font-family: var(--font-display); font-weight:600; font-size:1.14rem; margin-bottom:10px; color: var(--deep); }
   .card p{ color: var(--ink-soft); font-size:0.96rem; }
 
-  /* services variant: slimmer, terminal grid */
-  .svc-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(230px,1fr)); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden; }
-  .svc{ background: var(--panel-raised); padding:24px 22px; display:flex; flex-direction:column; gap:8px; }
-  .svc .num{ font-family:var(--font-mono); font-size:0.72rem; color: var(--cyan); }
-  .svc h4{ font-family:var(--font-display); font-weight:500; font-size:0.96rem; color: var(--ink); }
-  .svc p{ font-size:0.9rem; color: var(--ink-soft); }
+  /* lineas de negocio */
+  .lines-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 22px; }
+  .line-card{ padding: 32px 30px; position:relative; overflow:hidden; }
+  .line-card::before{
+    content:""; position:absolute; top:-40px; right:-40px; width:140px; height:140px; border-radius:50%;
+    background: radial-gradient(circle, var(--sky-soft), transparent 70%);
+  }
+  .line-card .tag{ font-family: var(--font-mono); font-size:0.72rem; color: var(--azure-dim); text-transform:uppercase; letter-spacing:.06em; }
+  .line-card h3{ font-family: var(--font-display); font-weight:600; font-size:1.38rem; margin:10px 0 14px; color: var(--deep); position:relative; }
+  .line-card p{ color: var(--ink-soft); font-size:1rem; position:relative; }
+  .line-card svg{ width:38px; height:38px; color: var(--azure); margin-bottom:16px; position:relative; }
+  .line-third{ background: var(--deep); color:#fff; }
+  .line-third::before{ background: radial-gradient(circle, rgba(45,167,255,0.25), transparent 70%); }
+  .line-third .tag{ color:#8FD3FF; }
+  .line-third h3{ color:#fff; }
+  .line-third p{ color:#BFD9E6; }
+  .line-third svg{ color:#8FD3FF; }
 
-  /* ---------------------------------------------------------------
-     ARQUITECTURA
-  --------------------------------------------------------------- */
-  .flowrow{
-    display:flex; align-items:stretch; gap:0; margin-bottom: 60px;
-    border:1px solid var(--line); border-radius:8px; overflow:hidden;
-  }
-  .flowstep{
-    flex:1; min-width: 150px; padding: 26px 18px; text-align:center;
-    display:flex; flex-direction:column; align-items:center; gap:12px;
-    border-left:1px solid var(--line-soft); position:relative; background: var(--panel-raised);
-  }
-  .flowstep:first-child{ border-left:none; }
-  .flowstep svg{ width:28px; height:28px; color: var(--cyan); }
-  .flowstep h4{ font-family:var(--font-mono); font-size:0.76rem; letter-spacing:.04em; text-transform:uppercase; color: var(--ink); }
-  .flowstep p{ font-size:0.8rem; color: var(--ink-faint); }
-  @media (max-width: 760px){
-    .flowrow{ flex-direction:column; }
-    .flowstep{ border-left:none; border-top:1px solid var(--line-soft); }
-    .flowstep:first-child{ border-top:none; }
-  }
+  /* services list */
+  .svc-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:1px; background: var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  .svc{ background: var(--paper); padding:26px 24px; display:flex; flex-direction:column; gap:9px; }
+  .svc .num{ font-family: var(--font-mono); font-size:0.74rem; color: var(--azure); }
+  .svc h4{ font-family: var(--font-display); font-weight:600; font-size:1.02rem; color: var(--deep); }
+  .svc p{ font-size:0.92rem; color: var(--ink-soft); }
 
-  .diagram-figure{ margin: 0 0 60px; }
-  .diagram-figure svg{ width:100%; height:auto; display:block; color: var(--ink-soft); }
-  .diagram-figure figcaption{
-    font-family: var(--font-mono); font-size:0.8rem; color: var(--ink-faint);
-    margin-top:14px; max-width: 72ch; border-left:2px solid var(--cyan); padding-left:14px;
+  .diff-banner{
+    background: linear-gradient(135deg, var(--deep), #0A4A69); color:#fff; border-radius:20px;
+    padding: 48px; text-align:center; box-shadow: var(--shadow-lg);
   }
+  .diff-banner .quote-big{ font-family: var(--font-display); font-style:italic; font-weight:500; font-size: clamp(1.3rem, 1rem + 1.2vw, 1.9rem); max-width:50ch; margin:0 auto 18px; }
+  .diff-banner p{ color:#BFD9E6; max-width: 62ch; margin: 0 auto; font-size:1rem; }
 
-  .stackrow{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:60px; }
-  .stackrow span{
-    font-family: var(--font-mono); font-size:0.78rem; color: var(--ink-soft);
-    border:1px solid var(--line-strong); border-radius:999px; padding:7px 15px;
-  }
+  /* alcance / enfoque */
+  .scope-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; }
+  @media (max-width: 860px){ .scope-grid{ grid-template-columns:1fr; } }
+  .scope-card{ padding:26px; }
+  .scope-card .eyebrow{ margin-bottom:12px; }
+  .scope-card p{ color: var(--ink-soft); font-size:0.96rem; }
 
-  .decision-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-bottom:68px; }
-  .decision{ padding:20px; }
-  .decision .id{ font-family:var(--font-mono); font-size:0.72rem; color: var(--amber); }
-  .decision h4{ font-family:var(--font-display); font-weight:500; font-size:0.98rem; margin:8px 0 8px; color: var(--ink); }
-  .decision p{ font-size:0.85rem; color: var(--ink-faint); }
+  .audience-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; }
+  .audience{ padding:22px 24px; display:flex; gap:14px; align-items:flex-start; }
+  .audience svg{ width:22px; height:22px; color: var(--azure); flex-shrink:0; margin-top:2px; }
+  .audience p{ font-size:0.94rem; color: var(--ink-soft); }
 
-  .datasheet-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:8px; margin-bottom: 40px; background: var(--panel-raised); }
-  table.datasheet{ width:100%; border-collapse:collapse; font-family: var(--font-mono); font-size:0.8rem; min-width: 560px; }
-  table.datasheet caption{
-    text-align:left; font-family: var(--font-display); font-weight:500; font-size:0.96rem;
-    padding: 16px 18px 8px; color: var(--ink);
+  /* organigrama */
+  .orgchart{ margin-bottom:60px; }
+  .org-top{ display:flex; justify-content:center; margin-bottom:0; }
+  .org-node-top{
+    background: var(--deep); color:#fff; padding:16px 28px; border-radius:12px; text-align:center;
+    font-family: var(--font-display); font-weight:600; font-size:1.05rem; box-shadow: var(--shadow);
   }
-  table.datasheet th, table.datasheet td{
-    text-align:left; padding: 11px 16px; border-top:1px solid var(--line-soft);
-    color: var(--ink-soft); white-space:nowrap;
-  }
-  table.datasheet tbody tr:hover{ background: var(--panel-hi); }
-  table.datasheet td:last-child, table.datasheet th:last-child{ white-space:normal; }
-  table.datasheet thead th{
-    color: var(--cyan); text-transform:uppercase; letter-spacing:.05em; font-size:0.68rem;
-    border-top:none; border-bottom:1px solid var(--line-strong);
-  }
-  .tables-grid{ display:grid; grid-template-columns: 1.3fr 1fr; gap:0 24px; }
-  @media (max-width: 920px){ .tables-grid{ grid-template-columns:1fr; } }
-
-  /* ---------------------------------------------------------------
-     ESTRATEGIA (canvas + pestel)
-  --------------------------------------------------------------- */
-  .estrategia-grid{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:50px; align-items:center; }
-  @media (max-width: 880px){ .estrategia-grid{ grid-template-columns:1fr; } }
-  .pestel-frame{
-    overflow:hidden; cursor: zoom-in; position:relative; padding:0; width:100%;
-  }
-  .pestel-frame img{ width:100%; height:auto; display:block; }
-  .pestel-frame .zoomtag{
-    position:absolute; bottom:12px; right:12px; font-family:var(--font-mono); font-size:0.7rem;
-    background: var(--void); color: var(--amber); padding:6px 10px; border-radius:4px; border:1px solid var(--line-strong);
-  }
-  .quote{
-    font-family: var(--font-body); font-style:italic; font-weight:500;
-    font-size: 1.28rem; color: var(--ink); border-left:3px solid var(--amber);
-    padding-left: 20px; margin: 26px 0;
+  .org-node-top span{ display:block; font-family: var(--font-mono); font-weight:400; font-size:0.7rem; color:#8FD3FF; text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+  .org-connector{ height:34px; width:2px; background: var(--line-strong); margin: 0 auto; }
+  .org-row{ display:flex; border-top:2px solid var(--line-strong); padding-top:0; }
+  .org-cell{ flex:1; display:flex; flex-direction:column; align-items:center; padding-top:0; position:relative; }
+  .org-cell::before{ content:""; position:absolute; top:-2px; left:50%; width:2px; height:26px; background: var(--line-strong); }
+  .org-box{ margin-top:26px; padding:16px 14px; text-align:center; width:100%; }
+  .org-box b{ font-family: var(--font-display); font-weight:600; font-size:0.88rem; color: var(--deep); display:block; }
+  .org-box span{ font-family: var(--font-mono); font-size:0.68rem; color: var(--azure-dim); display:block; margin-top:6px; }
+  @media (max-width: 920px){
+    .org-row{ flex-wrap:wrap; border-top:none; gap:14px 0; }
+    .org-cell{ flex: 1 1 45%; }
+    .org-cell::before{ display:none; }
+    .org-box{ margin-top:0; }
   }
 
-  /* ---------------------------------------------------------------
-     IMPACTO
-  --------------------------------------------------------------- */
-  .stat-row{ display:grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap:1px; background: var(--line-soft); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden; margin-bottom:56px; }
-  .stat{ padding: 28px 24px; background: var(--panel-raised); }
-  .stat b{ display:block; font-family:var(--font-display); font-weight:800; font-size:2.4rem; color: var(--amber); font-variant-numeric: tabular-nums; }
-  .stat span{ font-family:var(--font-mono); font-size:0.74rem; color: var(--ink-faint); }
-  .mv-grid{ display:grid; grid-template-columns:1fr 1fr; gap:40px; }
+  .leader-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:18px; }
+  .leader{ padding:24px 26px; }
+  .leader b{ font-family: var(--font-display); font-weight:600; font-size:1.02rem; color: var(--deep); display:block; margin-bottom:6px; }
+  .leader p{ font-size:0.92rem; color: var(--ink-soft); }
+
+  .org-stat-row{ display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:1px; background: var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:44px; }
+  .org-stat{ padding:22px 20px; background: var(--paper); text-align:center; }
+  .org-stat b{ display:block; font-family: var(--font-display); font-weight:700; font-size:1.9rem; color: var(--azure); }
+  .org-stat span{ font-size:0.78rem; color: var(--ink-faint); }
+
+  /* mision vision */
+  .mv-grid{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
   @media (max-width: 760px){ .mv-grid{ grid-template-columns:1fr; } }
-  .mv-grid h3{ font-family:var(--font-mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:.07em; color: var(--cyan); margin-bottom:14px; }
-  .mv-grid p{ color: var(--ink-soft); font-size:1.01rem; }
-  .mv-grid p + p{ margin-top:12px; }
+  .mv-card{ padding:34px 32px; }
+  .mv-card h3{ font-family: var(--font-mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:.08em; color: var(--azure); margin-bottom:16px; }
+  .mv-card p{ color: var(--ink-soft); font-size:1.03rem; }
+  .mv-card p + p{ margin-top:12px; }
 
-  /* ---------------------------------------------------------------
-     EQUIPO
-  --------------------------------------------------------------- */
-  .equipo-grid{ display:grid; grid-template-columns: 1fr 1.4fr; gap:50px; }
-  @media (max-width:860px){ .equipo-grid{ grid-template-columns:1fr; } }
-  .founders{ display:flex; flex-direction:column; gap:0; border-top:1px solid var(--line); }
-  .founder{ display:flex; justify-content:space-between; gap:16px; padding:18px 0; border-bottom:1px solid var(--line); }
-  .founder b{ font-family:var(--font-display); font-weight:500; font-size:1rem; color: var(--ink); }
-  .founder span{ font-family:var(--font-mono); font-size:0.74rem; color: var(--ink-faint); align-self:center; white-space:nowrap; }
-  .org-card{ padding:30px; }
-  .org-card dl{ display:grid; grid-template-columns: auto 1fr; gap: 10px 18px; font-size:0.93rem; }
-  .org-card dt{ font-family:var(--font-mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; color: var(--cyan); }
-  .org-card dd{ margin:0; color: var(--ink-soft); }
+  /* compromisos / policies */
+  .policy-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(270px,1fr)); gap:18px; }
+  .policy{ padding:26px; }
+  .policy svg{ width:26px; height:26px; color: var(--azure); margin-bottom:14px; }
+  .policy h4{ font-family: var(--font-display); font-weight:600; font-size:1.02rem; color: var(--deep); margin-bottom:8px; }
+  .policy p{ font-size:0.9rem; color: var(--ink-soft); }
+
+  /* legal facts */
+  .legal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:22px; }
+  @media (max-width: 860px){ .legal-grid{ grid-template-columns:1fr; } }
+  .legal-card{ padding:28px; }
+  .legal-card dl{ display:grid; grid-template-columns: auto 1fr; gap:11px 18px; font-size:0.9rem; }
+  .legal-card dt{ font-family: var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:.05em; color: var(--azure-dim); white-space:nowrap; }
+  .legal-card dd{ margin:0; color: var(--ink-soft); }
+  .legal-text{ padding:28px; }
+  .legal-text p{ color: var(--ink-soft); font-size:0.93rem; }
+
+  /* founders */
+  .founders-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:18px; margin-bottom:28px; }
+  .founder-card{ padding:26px; text-align:center; }
+  .founder-avatar{
+    width:56px; height:56px; border-radius:50%; margin: 0 auto 14px; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg, var(--azure), var(--azure-dim)); color:#fff; font-family: var(--font-display); font-weight:600; font-size:1.2rem;
+  }
+  .founder-card b{ font-family: var(--font-display); font-weight:600; font-size:1.02rem; color: var(--deep); display:block; }
+  .founder-card span{ font-size:0.82rem; color: var(--azure-dim); font-family: var(--font-mono); }
+  .edu-note{ text-align:center; color: var(--ink-faint); font-size:0.9rem; max-width:60ch; margin:0 auto; }
+  .edu-note a{ color: var(--azure); text-decoration:underline; text-underline-offset:3px; }
+
+  /* CTA band */
+  .cta-band{
+    background: linear-gradient(135deg, var(--deep) 0%, #0A4A69 100%); color:#fff; border-radius:24px;
+    padding: 56px 48px; text-align:center; box-shadow: var(--shadow-lg); position:relative; overflow:hidden;
+  }
+  .cta-band::before{ content:""; position:absolute; inset:0; background: radial-gradient(ellipse 500px 260px at 50% 0%, rgba(45,167,255,0.3), transparent 70%); }
+  .cta-band h2{ font-family: var(--font-display); font-weight:600; font-size: clamp(1.6rem,1.2rem+1.6vw,2.3rem); margin-bottom:14px; position:relative; }
+  .cta-band p{ color:#BFD9E6; max-width:56ch; margin:0 auto 30px; position:relative; }
+  .cta-band .hero-ctas{ justify-content:center; margin-bottom:0; position:relative; }
 
   /* ---------------------------------------------------------------
      FOOTER
   --------------------------------------------------------------- */
-  footer{ background: var(--panel); color: var(--ink-faint); padding: 52px 0 32px; border-top:1px solid var(--line-soft); }
-  .foot-top{ display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; margin-bottom: 32px; }
-  .foot-status{ display:flex; align-items:center; gap:9px; font-family:var(--font-mono); font-size:0.78rem; color: var(--ink-soft); }
-  .foot-slogan{ font-family: var(--font-body); font-style:italic; font-size:1.15rem; color: var(--ink); margin-bottom:6px; }
-  .foot-bottom{ border-top:1px solid var(--line-soft); padding-top:20px; font-family:var(--font-mono); font-size:0.74rem; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color: var(--ink-faint); }
+  footer{ background: var(--deep-2); color:#8FAAB8; padding: 52px 0 32px; }
+  .foot-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap; margin-bottom:32px; }
+  .foot-brand{ display:flex; align-items:center; gap:10px; }
+  .foot-brand img{ height:26px; }
+  .foot-slogan{ font-family: var(--font-display); font-style:italic; font-size:1.05rem; color:#fff; margin-top:10px; }
+  .foot-links{ display:flex; gap:28px; flex-wrap:wrap; font-size:0.9rem; }
+  .foot-links a{ color:#8FAAB8; text-decoration:none; }
+  .foot-links a:hover{ color:#fff; }
+  .foot-bottom{ border-top:1px solid rgba(255,255,255,0.1); padding-top:20px; font-family: var(--font-mono); font-size:0.74rem; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
 
-  /* ---------------------------------------------------------------
-     LIGHTBOX
-  --------------------------------------------------------------- */
-  .lightbox{
-    position:fixed; inset:0; background: rgba(4,7,8,0.9); z-index:100;
-    display:flex; align-items:center; justify-content:center; padding: 40px 20px;
-    backdrop-filter: blur(4px);
-  }
-  .lightbox[hidden]{ display:none; }
-  .lightbox img{ max-width: min(94vw, 680px); max-height: 90vh; border-radius: 6px; border:1px solid var(--line-strong); box-shadow: 0 40px 90px -30px rgba(0,0,0,0.7); }
-  .lightbox button{
-    position:absolute; top: 22px; right: 28px; background:none; border:1px solid var(--line-strong);
-    color: var(--ink); font-family: var(--font-mono); font-size:0.76rem; padding: 8px 14px; border-radius:4px; cursor:pointer;
-  }
-  .lightbox button:hover{ border-color: var(--amber); color: var(--amber); }
-
-  :focus-visible{ outline: 2px solid var(--cyan); outline-offset: 3px; }
+  :focus-visible{ outline: 2px solid var(--azure); outline-offset: 3px; }
 </style>
 </head>
 <body>
 
-<div class="ticker" aria-hidden="true">
-  <div class="ticker-track">
-    <span>● LIVE</span> <b>ESTADO</b> ABASTECIMIENTO_TANQUE &nbsp;·&nbsp; <b>CONTROL</b> EJECUTADO EN SITIO — DA-01 &nbsp;·&nbsp; <b>INDICADORES</b> 6 EN TIEMPO REAL &nbsp;·&nbsp; <b>PRONÓSTICO</b> OPEN-METEO · ACTUALIZA CADA HORA &nbsp;·&nbsp; <b>RESPALDO LOCAL</b> SQLITE — ALMACÉN Y REENVÍO &nbsp;·&nbsp; <b>BROKER</b> MQTT · TLS 8883 &nbsp;·&nbsp;
-    <span>● LIVE</span> <b>ESTADO</b> ABASTECIMIENTO_TANQUE &nbsp;·&nbsp; <b>CONTROL</b> EJECUTADO EN SITIO — DA-01 &nbsp;·&nbsp; <b>INDICADORES</b> 6 EN TIEMPO REAL &nbsp;·&nbsp; <b>PRONÓSTICO</b> OPEN-METEO · ACTUALIZA CADA HORA &nbsp;·&nbsp; <b>RESPALDO LOCAL</b> SQLITE — ALMACÉN Y REENVÍO &nbsp;·&nbsp; <b>BROKER</b> MQTT · TLS 8883 &nbsp;·&nbsp;
-  </div>
-</div>
-
 <header class="nav">
   <div class="nav-inner">
     <a class="brand" href="#hero">
-      <span class="brand-chip"><img src="logo.png" alt="SICAL"></span>
+      <img src="logo.png" alt="SICAL">
       <span class="brand-word">SICAL <em>S.A.S.</em></span>
     </a>
     <nav class="navlinks" id="navlinks">
-      <a href="#problema" data-sec="problema">01 · Problema</a>
-      <a href="#propuesta" data-sec="propuesta">02 · Propuesta</a>
-      <a href="#arquitectura" data-sec="arquitectura">03 · Arquitectura</a>
-      <a href="#servicios" data-sec="servicios">04 · Servicios</a>
-      <a href="#estrategia" data-sec="estrategia">05 · Estrategia</a>
-      <a href="#impacto" data-sec="impacto">06 · Impacto</a>
-      <a href="#equipo" data-sec="equipo">07 · Equipo</a>
+      <a class="nav-anchor" href="#quienes-somos">Quiénes somos</a>
+      <a class="nav-anchor" href="#servicios">Servicios</a>
+      <a class="nav-anchor" href="#organizacion">Organización</a>
+      <a class="nav-anchor" href="#equipo">Equipo</a>
+      <a class="tab-alt" href="academico.html">Documentación técnica →</a>
     </nav>
   </div>
 </header>
@@ -487,421 +341,385 @@
        HERO
   ============================================================= -->
   <section id="hero" class="hero">
-    <canvas id="rain"></canvas>
     <div class="container hero-inner">
       <div class="hero-top">
-        <div class="hero-logo"><img src="logo.png" alt="Logotipo SICAL: nube, gota y tanque"></div>
-        <div class="eyebrow"><span class="n">§00</span> Proyecto académico — Universidad Piloto de Colombia · Ingeniería de Sistemas</div>
+        <span class="hero-badge"><span class="dot"></span> Ingeniería del agua y enfriamiento líquido · Bogotá D.C.</span>
       </div>
-      <p class="boot-line"><span class="live-dot"></span> sical_os v1.0 — consola de operación hídrica</p>
       <h1>El agua que cae, <em>trabaja.</em></h1>
-      <p class="hero-sub">SICAL capta el agua lluvia de las cubiertas de Bogotá, la trata y la entrega a los usos no potables de la edificación — y usa ese mismo circuito para enfriar las salas de servidores. Todo instrumentado, todo medido, todo auditable desde un tablero.</p>
+      <p class="hero-sub">SICAL S.A.S. capta el agua lluvia de las cubiertas, la trata y la entrega a los usos no potables de la edificación — y usa ese mismo circuito para enfriar las salas de servidores. Un solo sistema de agua, instrumentado y auditable desde un tablero.</p>
       <div class="hero-ctas">
-        <a class="btn btn-primary" href="#arquitectura">Ver cómo funciona ↓</a>
-        <a class="btn btn-ghost" href="#estrategia">Análisis Canvas + PESTEL</a>
+        <a class="btn btn-primary" href="#servicios">Conocer los servicios</a>
+        <a class="btn btn-ghost" href="academico.html">Documentación técnica del proyecto →</a>
       </div>
       <div class="hero-facts">
+        <div><b>2</b><span>líneas de negocio integradas</span></div>
         <div><b>800 mm</b><span>precipitación media anual en Bogotá</span></div>
-        <div><b>15</b><span>problemas del sector atendidos</span></div>
-        <div><b>5</b><span>disciplinas de ingeniería integradas</span></div>
-        <div><b>6</b><span>indicadores medidos en tiempo real</span></div>
+        <div><b>7</b><span>departamentos en la estructura</span></div>
+        <div><b>31</b><span>cargos · 39 plazas en planta</span></div>
       </div>
     </div>
+    <svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="#F2F8FF" d="M0,40 C240,90 480,0 720,30 C960,60 1200,10 1440,45 L1440,90 L0,90 Z"></path>
+    </svg>
   </section>
 
   <!-- ============================================================
-       01 · PROBLEMA
+       QUIÉNES SOMOS
   ============================================================= -->
-  <section id="problema" class="band bracketed">
+  <section id="quienes-somos" class="band band-ice">
     <div class="container">
-      <div class="eyebrow"><span class="n">§01</span> El problema</div>
+      <div class="eyebrow"><span class="n">01</span> Quiénes somos</div>
       <div class="section-head">
-        <h2>Un sector denso que pierde agua y acumula calor</h2>
-        <p>El estudio de mercados se levantó sobre el corredor de la Av. Calle 26, en Bogotá D.C. Quince planos y problemas identificados muestran la misma historia: cubiertas que evacúan agua lluvia sin aprovecharla, una red que puede saturarse, y edificios cuya carga de cómputo exige enfriamiento.</p>
+        <h2>Una empresa, un solo sistema de agua</h2>
       </div>
-      <div class="problema-grid">
-        <dl class="locale panel">
-          <dt>Coordenadas del sector</dt>
-          <dd>4,656347° N · 74,106513° O</dd>
-          <dt>Corredor</dt>
-          <dd>Av. Calle 26, entre Av. Calle 24, Calle 25 y carreras 68B–68D</dd>
-          <dt>Perfil urbano</dt>
-          <dd>Predominan edificios de 1 a 5 pisos; uso residencial al occidente, comercial alrededor del predio</dd>
-          <dt>Infraestructura verde</dt>
-          <dd>Una sola franja verde lineal en todo el sector</dd>
-          <dt>Cobertura de redes</dt>
-          <dd>Acueducto, alcantarillado y 4G/5G cubren la totalidad del sector</dd>
-        </dl>
-        <div class="prob-groups">
-          <article class="prob-group panel">
-            <header><h3>Ingeniería civil</h3><span class="count">problemas 1–9</span></header>
-            <ul>
-              <li>Mucha superficie impermeable y una sola franja verde: la escorrentía no tiene dónde retenerse.</li>
-              <li>La red de acueducto y alcantarillado puede saturarse en lluvias intensas.</li>
-              <li>Las cubiertas de los edificios altos evacúan agua lluvia sin ningún aprovechamiento.</li>
-              <li>Se usa agua potable en riego, aseo y enfriamiento, usos que no la requieren.</li>
-            </ul>
-          </article>
-          <article class="prob-group panel">
-            <header><h3>Civil + sistemas</h3><span class="count">problemas 10–11</span></header>
-            <ul>
-              <li>Un circuito de agua cerca de los servidores puede fallar y dañar los equipos sin detección de fugas.</li>
-              <li>Sin automatización, la distribución entre tanque, tratamiento y servidores depende de operación manual.</li>
-            </ul>
-          </article>
-          <article class="prob-group panel">
-            <header><h3>Ingeniería de sistemas</h3><span class="count">problemas 12–15</span></header>
-            <ul>
-              <li>Los servidores generan calor continuo cuyo enfriamiento consume agua y energía.</li>
-              <li>No hay medición en tiempo real de temperatura ni de caudal por sector.</li>
-              <li>Una caída de red dejaría el sistema sin datos si no hay respaldo local.</li>
-              <li>El cliente no tiene cómo comprobar cuánta agua y energía está ahorrando.</li>
-            </ul>
-          </article>
+      <div class="about-grid">
+        <div class="about-copy reveal">
+          <p>SICAL S.A.S. aprovecha dos recursos que hoy se desperdician en la mayoría de las edificaciones de Bogotá: el agua lluvia que cae sobre las cubiertas y termina en el alcantarillado, y el calor que disipan las salas de servidores y que se expulsa al ambiente. La empresa convierte el primero en agua de servicio y usa ese mismo circuito para retirar el segundo.</p>
+          <p>El sistema capta el agua lluvia en las cubiertas, descarta las primeras aguas, la trata por sedimentación, filtración multicapa y desinfección, la almacena y la distribuye hacia los usos no potables: sanitarios, riego, lavado de zonas duras y torres o intercambiadores de enfriamiento. Una parte alimenta el circuito secundario del sistema de enfriamiento líquido de los servidores, y el calor recuperado vuelve a usos no potables de la edificación.</p>
+          <p>Bogotá tiene condiciones favorables para este modelo: una precipitación media anual cercana a los 800 milímetros, tarifas de acueducto que suben de forma sostenida, y una exigencia creciente de construcción sostenible — mientras la demanda de cómputo local multiplica las salas de servidores que ninguna edificación fue diseñada para enfriar.</p>
+          <p class="quote-slogan">«El agua que cae, trabaja.»</p>
         </div>
+        <dl class="id-card panel reveal">
+          <dt>Nombre comercial</dt><dd>SICAL S.A.S.</dd>
+          <dt>Razón social</dt><dd>SICAL S.A.S. — Sistema Inteligente de Captación y Aprovechamiento de Lluvia</dd>
+          <dt>Sector</dt><dd>Ingeniería, tecnología, gestión del agua y eficiencia energética en edificaciones</dd>
+          <dt>Naturaleza</dt><dd>Sociedad por Acciones Simplificada (S.A.S.), Ley 1258 de 2008</dd>
+          <dt>Domicilio</dt><dd>Bogotá D.C., Colombia</dd>
+          <dt>Mercado objetivo</dt><dd>Edificios corporativos e institucionales, conjuntos residenciales, centros de datos, universidades, colegios, hospitales, hoteles, centros comerciales y entidades públicas del Distrito</dd>
+        </dl>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       02 · PROPUESTA DE VALOR
+       PROPUESTA DE VALOR
   ============================================================= -->
-  <section id="propuesta" class="band bracketed reveal">
+  <section class="band band-paper reveal">
     <div class="container">
-      <div class="eyebrow"><span class="n">§02</span> Propuesta de valor</div>
+      <div class="eyebrow"><span class="n">02</span> Propuesta de valor</div>
       <div class="section-head">
-        <h2>Un solo sistema de agua, no cuatro proveedores</h2>
-        <p>«La lluvia se capta. El sistema la trata. El servidor la aprovecha. El dato lo demuestra.» SICAL responde por la hidráulica, la térmica, la civil, la electrónica y el software de cada instalación.</p>
+        <h2>No vendemos un tanque ni un aire acondicionado</h2>
+        <p>Vendemos un sistema integrado que reduce a la vez el consumo de agua potable y el consumo eléctrico de enfriamiento — y que demuestra con datos cuánto lo redujo.</p>
       </div>
       <div class="cards">
-        <div class="card panel"><span class="num">§02.1</span><h3>Doble ahorro, una inversión</h3><p>El mismo circuito atiende los usos no potables de la edificación y el enfriamiento de los servidores.</p></div>
-        <div class="card panel"><span class="num">§02.2</span><h3>Integración completa</h3><p>Una sola empresa responde por hidráulica, térmica, civil, electrónica y software — nada que coordinar entre proveedores.</p></div>
-        <div class="card panel"><span class="num">§02.3</span><h3>Medición verificable</h3><p>Agua captada, agua entregada, turbiedad removida, escorrentía retenida y calor disipado, publicados en un tablero.</p></div>
-        <div class="card panel"><span class="num">§02.4</span><h3>Operación automática</h3><p>El control decide con el pronóstico de lluvia y la demanda; el usuario no opera nada.</p></div>
-        <div class="card panel"><span class="num">§02.5</span><h3>A la medida</h3><p>Tanque, tren de tratamiento y capacidad de enfriamiento se calculan con la precipitación y la carga térmica reales.</p></div>
-        <div class="card panel"><span class="num">§02.6</span><h3>Acompañamiento posventa</h3><p>Plan de mantenimiento preventivo y correctivo, con reposición programada de los medios filtrantes.</p></div>
+        <div class="card panel"><span class="num">01</span><h3>Doble ahorro, una inversión</h3><p>El mismo circuito de agua atiende los usos no potables de la edificación y el enfriamiento de los servidores.</p></div>
+        <div class="card panel"><span class="num">02</span><h3>Integración completa</h3><p>Una sola empresa responde por la hidráulica, la térmica, la civil, la electrónica y el software; nada que coordinar entre proveedores.</p></div>
+        <div class="card panel"><span class="num">03</span><h3>Medición verificable</h3><p>Agua captada, agua entregada, turbiedad removida, escorrentía retenida y calor disipado, publicados en un tablero accesible en todo momento.</p></div>
+        <div class="card panel"><span class="num">04</span><h3>Operación automática</h3><p>El control decide con el pronóstico de lluvia y la demanda; el usuario no tiene que operar nada.</p></div>
+        <div class="card panel"><span class="num">05</span><h3>Solución a la medida</h3><p>Tanque, tren de tratamiento y capacidad de enfriamiento se calculan con la precipitación y la carga térmica reales de cada edificación.</p></div>
+        <div class="card panel"><span class="num">06</span><h3>Acompañamiento posventa</h3><p>Plan de mantenimiento preventivo y correctivo, con reposición programada de los medios filtrantes.</p></div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       03 · ARQUITECTURA
+       LÍNEAS DE NEGOCIO
   ============================================================= -->
-  <section id="arquitectura" class="band bracketed">
+  <section class="band band-foam reveal">
     <div class="container">
-      <div class="eyebrow"><span class="n">§03</span> Cómo funciona</div>
+      <div class="eyebrow"><span class="n">03</span> Enfoque y líneas de negocio</div>
       <div class="section-head">
-        <h2>De la cubierta al tablero, en cinco pasos</h2>
-        <p>El mismo circuito de agua atiende dos funciones. La arquitectura se documenta con el modelo C4 y se construye primero como un prototipo funcional: un Arduino UNO, sensores de bajo costo y el mismo software que correría en producción.</p>
+        <h2>Dos líneas, un mismo circuito de agua</h2>
+        <p>SICAL S.A.S. es una empresa de ingeniería y tecnología dedicada a soluciones sostenibles para edificaciones con alto consumo de agua, en especial las que cuentan con infraestructura tecnológica y cuartos de servidores.</p>
       </div>
-
-      <div class="flowrow reveal">
-        <div class="flowstep">
+      <div class="lines-grid">
+        <div class="line-card panel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c3 4 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-7 6-11Z"/></svg>
-          <h4>Captación</h4><p>Cubierta, canaletas y desviador de primeras aguas</p>
+          <span class="tag">Línea 01</span>
+          <h3>Gestión y aprovechamiento de agua lluvia</h3>
+          <p>Diseño de sistemas para la captación, conducción, tratamiento, almacenamiento y distribución de agua lluvia destinada a usos no potables dentro de las edificaciones, reduciendo el consumo de agua potable en actividades que no requieren esa calidad.</p>
         </div>
-        <div class="flowstep">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16l-6 8v7l-4 2v-9L4 4Z"/></svg>
-          <h4>Tratamiento</h4><p>Sedimentación, filtración multicapa y desinfección</p>
-        </div>
-        <div class="flowstep">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6h14M6 6v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6M9 10h6"/></svg>
-          <h4>Almacenamiento</h4><p>Tanque dimensionado con la consigna de nivel</p>
-        </div>
-        <div class="flowstep">
+        <div class="line-card panel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h4l2-6 4 12 2-6h4"/></svg>
-          <h4>Enfriamiento</h4><p>Circuito secundario para placas frías de servidores</p>
+          <span class="tag">Línea 02</span>
+          <h3>Enfriamiento líquido para servidores</h3>
+          <p>Diseño e implementación de refrigeración líquida para centros de datos y espacios con alta concentración de servidores, usando agua lluvia tratada en el circuito secundario, separado del circuito de los equipos por intercambiadores de calor.</p>
         </div>
-        <div class="flowstep">
+        <div class="line-card panel line-third">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V9m6 10V5m6 14v-7m6 7V11"/></svg>
-          <h4>Plataforma</h4><p>Telemetría, consigna e indicadores en el tablero</p>
+          <span class="tag">Capacidad transversal</span>
+          <h3>Instrumentación y plataforma</h3>
+          <p>Ambas líneas se apoyan en el control automático y el software que operan y monitorean los sistemas instalados — integrando ingeniería hidráulica, térmica, civil, electrónica y de sistemas en una sola solución medible.</p>
         </div>
-      </div>
-
-      <!-- Diagram 1: control location -->
-      <figure class="diagram-figure reveal">
-        <svg viewBox="0 0 960 420" role="img" aria-label="Diagrama: el control de fugas y de válvulas se ejecuta en el Arduino dentro de la edificación; la nube solo calcula la consigna, guarda datos y muestra el tablero, de modo que una caída de Internet no detiene el control.">
-          <defs>
-            <marker id="arrowC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/>
-            </marker>
-          </defs>
-          <rect x="40" y="60" width="380" height="300" rx="6" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 5"/>
-          <text x="60" y="90" font-family="JetBrains Mono" font-size="12" letter-spacing="1" fill="currentColor" opacity="0.75">EDIFICACIÓN DEL CLIENTE</text>
-
-          <rect x="540" y="60" width="380" height="300" rx="6" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 5"/>
-          <text x="560" y="90" font-family="JetBrains Mono" font-size="12" letter-spacing="1" fill="currentColor" opacity="0.75">SERVIDOR / NUBE</text>
-
-          <rect x="70" y="120" width="300" height="56" rx="5" fill="none" stroke="currentColor"/>
-          <text x="90" y="144" font-family="Literata" font-size="14" fill="currentColor">Controlador de campo</text>
-          <text x="90" y="162" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.65">Arduino UNO R3 — firmware C++</text>
-
-          <rect x="70" y="200" width="300" height="56" rx="5" fill="none" stroke="currentColor"/>
-          <text x="90" y="224" font-family="Literata" font-size="14" fill="currentColor">Pasarela de comunicación</text>
-          <text x="90" y="242" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.65">Node.js — serialport + MQTT.js</text>
-
-          <rect x="70" y="280" width="300" height="56" rx="5" fill="none" stroke="currentColor"/>
-          <text x="90" y="304" font-family="Literata" font-size="14" fill="currentColor">Respaldo local</text>
-          <text x="90" y="322" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.65">SQLite — almacén y reenvío</text>
-
-          <rect x="570" y="110" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="140" font-family="Literata" font-size="14" fill="currentColor">Broker MQTT · Mosquitto</text>
-
-          <rect x="570" y="180" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="210" font-family="Literata" font-size="14" fill="currentColor">Backend · Node.js + Express</text>
-
-          <rect x="570" y="250" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="280" font-family="Literata" font-size="14" fill="currentColor">PostgreSQL + TimescaleDB</text>
-
-          <rect x="570" y="320" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="350" font-family="Literata" font-size="14" fill="currentColor">App web · React + Chart.js</text>
-
-          <line x1="220" y1="176" x2="220" y2="200" stroke="currentColor" marker-end="url(#arrowC)"/>
-          <text x="232" y="192" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">USB · JSON 115200 bps</text>
-          <path d="M220 256 C 220 272, 340 272, 340 256" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
-          <path d="M340 256 C 340 272, 220 280, 220 280" fill="none" stroke="currentColor" stroke-opacity="0.3" marker-end="url(#arrowC)"/>
-
-          <path d="M370 222 C 460 222, 460 135, 570 135" fill="none" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrowC)"/>
-          <text x="400" y="150" font-family="JetBrains Mono" font-size="11" fill="currentColor">MQTT · TLS 8883</text>
-
-          <path d="M570 205 C 460 205, 460 230, 370 230" fill="none" stroke="currentColor" stroke-opacity="0.55" marker-end="url(#arrowC)"/>
-          <text x="400" y="252" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.75">consigna · cada hora</text>
-
-          <line x1="730" y1="160" x2="730" y2="180" stroke="currentColor" marker-end="url(#arrowC)"/>
-          <line x1="730" y1="230" x2="730" y2="250" stroke="currentColor" marker-end="url(#arrowC)"/>
-          <line x1="730" y1="300" x2="730" y2="320" stroke="currentColor" marker-end="url(#arrowC)"/>
-
-          <text x="60" y="400" font-family="JetBrains Mono" font-size="12" fill="var(--amber)">→ el corte de fugas (EV-3) se decide en el Arduino: no depende de Internet (decisión DA-01).</text>
-        </svg>
-        <figcaption>Figura A. El control se ejecuta en el sitio; la nube solo calcula la consigna, guarda los datos y muestra el tablero — si se cae la conexión, el sistema sigue operando y protegiendo los equipos.</figcaption>
-      </figure>
-
-      <div class="stackrow reveal">
-        <span>Arduino UNO R3 · ATmega328P</span>
-        <span>Node.js</span>
-        <span>MQTT · Eclipse Mosquitto</span>
-        <span>PostgreSQL + TimescaleDB</span>
-        <span>React + Chart.js</span>
-        <span>Docker Compose</span>
-        <span>API Open-Meteo</span>
-      </div>
-
-      <!-- Diagram 2: state machine -->
-      <figure class="diagram-figure reveal">
-        <svg viewBox="0 0 960 460" role="img" aria-label="Diagrama de estados del controlador: opera en ABASTECIMIENTO_TANQUE con agua lluvia, conmuta a ABASTECIMIENTO_RED si el nivel baja o el agua está turbia, libera espacio en DESCARGA_PREVENTIVA antes de una tormenta, y pasa a los estados de alarma EMERGENCIA_FUGA o FALLA_SENSOR ante una fuga o una lectura inválida, con rearme manual a INICIALIZANDO.">
-          <defs>
-            <marker id="arrowS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
-              <path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/>
-            </marker>
-            <marker id="arrowA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
-              <path d="M0 0 L10 5 L0 10 Z" fill="var(--alarm)"/>
-            </marker>
-          </defs>
-
-          <rect x="40" y="40" width="220" height="64" rx="6" fill="none" stroke="currentColor"/>
-          <text x="150" y="77" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" fill="currentColor">INICIALIZANDO</text>
-
-          <rect x="370" y="40" width="220" height="64" rx="6" fill="none" stroke="currentColor" stroke-width="1.6"/>
-          <text x="480" y="72" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">ABASTECIMIENTO</text>
-          <text x="480" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">_TANQUE</text>
-
-          <rect x="700" y="40" width="220" height="64" rx="6" fill="none" stroke="currentColor"/>
-          <text x="810" y="72" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">DESCARGA</text>
-          <text x="810" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">_PREVENTIVA</text>
-
-          <rect x="40" y="330" width="220" height="64" rx="6" fill="none" stroke="currentColor"/>
-          <text x="150" y="358" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">ABASTECIMIENTO</text>
-          <text x="150" y="374" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">_RED</text>
-
-          <rect x="370" y="330" width="220" height="64" rx="6" fill="none" stroke="var(--alarm)"/>
-          <text x="480" y="368" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" fill="var(--alarm)">EMERGENCIA_FUGA</text>
-
-          <rect x="700" y="330" width="220" height="64" rx="6" fill="none" stroke="var(--alarm)"/>
-          <text x="810" y="368" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" fill="var(--alarm)">FALLA_SENSOR</text>
-
-          <line x1="260" y1="72" x2="370" y2="72" stroke="currentColor" marker-end="url(#arrowS)"/>
-          <text x="265" y="62" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.75">sensores OK</text>
-
-          <line x1="590" y1="72" x2="700" y2="72" stroke="currentColor" marker-end="url(#arrowS)"/>
-          <text x="600" y="62" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.75">lluvia prevista</text>
-          <path d="M700 90 C 640 110, 640 110, 590 90" fill="none" stroke="currentColor" stroke-opacity="0.55" marker-end="url(#arrowS)"/>
-          <text x="612" y="122" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">nivel = consigna</text>
-
-          <path d="M440 104 C 300 190, 230 230, 170 330" fill="none" stroke="currentColor" marker-end="url(#arrowS)"/>
-          <text x="205" y="230" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.8">nivel bajo / turbio</text>
-          <path d="M260 345 C 330 280, 380 200, 450 115" fill="none" stroke="currentColor" stroke-opacity="0.55" marker-end="url(#arrowS)"/>
-          <text x="275" y="260" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">nivel y calidad OK</text>
-
-          <line x1="480" y1="104" x2="480" y2="330" stroke="var(--alarm)" stroke-dasharray="5 5" marker-end="url(#arrowA)"/>
-          <text x="490" y="220" font-family="JetBrains Mono" font-size="10" fill="var(--alarm)">fuga detectada</text>
-
-          <path d="M590 95 C 700 180, 740 230, 790 330" fill="none" stroke="var(--alarm)" stroke-dasharray="5 5" marker-end="url(#arrowA)"/>
-          <text x="690" y="225" font-family="JetBrains Mono" font-size="10" fill="var(--alarm)">lectura inválida ×3</text>
-
-          <path d="M370 362 C 230 420, 180 420, 110 394" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-dasharray="2 4" marker-end="url(#arrowS)"/>
-          <path d="M700 362 C 400 440, 220 430, 150 400" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-dasharray="2 4" marker-end="url(#arrowS)"/>
-          <text x="330" y="440" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">rearme manual → INICIALIZANDO</text>
-        </svg>
-        <figcaption>Figura B. Transiciones principales del controlador, simplificadas desde el estado de operación normal. Las líneas discontinuas en naranja son las dos rutas de alarma; cualquiera exige rearme manual.</figcaption>
-      </figure>
-
-      <div class="decision-grid reveal">
-        <div class="decision panel"><span class="id">DA-01</span><h4>Control en el sitio</h4><p>La nube calcula la consigna, guarda los datos y muestra el tablero — nunca acciona las válvulas. Así la protección contra fugas no depende de la red.</p></div>
-        <div class="decision panel"><span class="id">DA-05</span><h4>PostgreSQL + TimescaleDB</h4><p>Series de tiempo con SQL estándar y agregados automáticos por hora y por día, en el mismo motor que sitios, usuarios y alarmas.</p></div>
-        <div class="decision panel"><span class="id">DA-07</span><h4>Pronóstico vía Open-Meteo</h4><p>Precipitación hora a hora para las coordenadas del predio, sin llave de acceso para uso no comercial — clave para calcular la consigna de nivel.</p></div>
-        <div class="decision panel"><span class="id">DA-08</span><h4>Docker Compose</h4><p>El mismo archivo de despliegue pasa sin cambios del PC del equipo, en la maqueta, a un servidor en la nube en producción.</p></div>
-      </div>
-
-      <div class="tables-grid">
-        <div class="datasheet-wrap reveal">
-          <table class="datasheet">
-            <caption>Sensores del nodo de campo</caption>
-            <thead><tr><th>Variable</th><th>Referencia</th><th>Pin</th><th>Interfaz</th></tr></thead>
-            <tbody>
-              <tr><td>Nivel del tanque</td><td>HC-SR04</td><td>D5 / D6</td><td>Digital por pulso</td></tr>
-              <tr><td>Caudal de entrada</td><td>YF-S201</td><td>D2</td><td>Interrupción</td></tr>
-              <tr><td>Caudal de salida</td><td>YF-S201</td><td>D3</td><td>Interrupción</td></tr>
-              <tr><td>Lluvia</td><td>FC-37</td><td>D4</td><td>Digital</td></tr>
-              <tr><td>Temperaturas</td><td>2× DS18B20</td><td>D7</td><td>OneWire</td></tr>
-              <tr><td>Turbidez</td><td>SEN0189</td><td>A0</td><td>Analógica</td></tr>
-              <tr><td>Fuga</td><td>Sensor genérico</td><td>A1</td><td>Analógica + umbral</td></tr>
-              <tr><td>Bomba y EV-1/2/3</td><td>Módulo 4 relés</td><td>D8 / D9 / A2 / A3</td><td>Digital</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="datasheet-wrap reveal">
-          <table class="datasheet">
-            <caption>Temas MQTT</caption>
-            <thead><tr><th>Tema</th><th>Publica</th><th>Cuándo</th></tr></thead>
-            <tbody>
-              <tr><td>.../telemetria</td><td>Pasarela</td><td>Cada 60 s</td></tr>
-              <tr><td>.../evento</td><td>Pasarela</td><td>Cambio de estado</td></tr>
-              <tr><td>.../conexion</td><td>Pasarela / broker</td><td>Conexión / caída</td></tr>
-              <tr><td>.../consigna</td><td>Backend</td><td>Cada hora</td></tr>
-              <tr><td>.../comando</td><td>Backend</td><td>Bajo demanda</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="datasheet-wrap reveal">
-        <table class="datasheet">
-          <caption>Indicadores que calcula la plataforma</caption>
-          <thead><tr><th>Indicador</th><th>Cómo se calcula</th></tr></thead>
-          <tbody>
-            <tr><td>Agua captada (m³)</td><td>Suma del caudal de entrada al tanque (FS-1) en el periodo.</td></tr>
-            <tr><td>Agua aprovechada (m³)</td><td>Suma del caudal de salida del tanque (FS-2) mientras abastece.</td></tr>
-            <tr><td>Agua de red evitada (m³ y $)</td><td>Agua aprovechada × tarifa vigente de acueducto y alcantarillado.</td></tr>
-            <tr><td>Escorrentía retenida (m³)</td><td>Agua captada en el evento que no salió por purga ni por rebose.</td></tr>
-            <tr><td>Calor disipado (kWh)</td><td>Caudal × calor específico del agua (4,186 kJ/kg·K) × ΔT, acumulado.</td></tr>
-            <tr><td>Disponibilidad del sitio (%)</td><td>Tiempo con el controlador respondiendo sobre el tiempo total.</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       04 · SERVICIOS
+       SERVICIOS
   ============================================================= -->
-  <section id="servicios" class="band bracketed reveal">
+  <section id="servicios" class="band band-paper reveal">
     <div class="container">
-      <div class="eyebrow"><span class="n">§04</span> Servicios</div>
+      <div class="eyebrow"><span class="n">04</span> Servicios principales</div>
       <div class="section-head">
-        <h2>El ciclo completo, de la viabilidad al mantenimiento</h2>
-        <p>SICAL cubre el proyecto entero: desde el estudio previo hasta el plan de mantenimiento posventa.</p>
+        <h2>El ciclo completo, del estudio previo al mantenimiento</h2>
       </div>
       <div class="svc-grid">
-        <div class="svc"><span class="num">01</span><h4>Diagnóstico y viabilidad</h4><p>Levantamiento del sitio, análisis hidrológico y carga térmica.</p></div>
-        <div class="svc"><span class="num">02</span><h4>Captación y almacenamiento</h4><p>Cubiertas, canaletas, desviador de primeras aguas y tanque.</p></div>
-        <div class="svc"><span class="num">03</span><h4>Tratamiento</h4><p>Sedimentación, filtración multicapa y desinfección.</p></div>
-        <div class="svc"><span class="num">04</span><h4>Enfriamiento líquido</h4><p>Intercambiador, circuitos y recuperación de calor residual.</p></div>
+        <div class="svc"><span class="num">01</span><h4>Diagnóstico y viabilidad</h4><p>Levantamiento del sitio, análisis hidrológico, carga térmica y evaluación técnica y económica.</p></div>
+        <div class="svc"><span class="num">02</span><h4>Captación y almacenamiento</h4><p>Cubiertas captadoras, canaletas, desviador de primeras aguas y dimensionamiento del tanque.</p></div>
+        <div class="svc"><span class="num">03</span><h4>Tratamiento</h4><p>Sedimentación, filtración multicapa, desinfección y parámetros de calidad por uso.</p></div>
+        <div class="svc"><span class="num">04</span><h4>Enfriamiento líquido</h4><p>Intercambiador, circuitos primario y secundario y recuperación del calor residual.</p></div>
         <div class="svc"><span class="num">05</span><h4>Instrumentación y control</h4><p>Sensores, tablero eléctrico, firmware y calibración.</p></div>
-        <div class="svc"><span class="num">06</span><h4>Plataforma de datos</h4><p>Nube, series de tiempo, API y tablero por sitio.</p></div>
-        <div class="svc"><span class="num">07</span><h4>Montaje y puesta en marcha</h4><p>Adecuaciones menores, integración y pruebas de estanqueidad.</p></div>
-        <div class="svc"><span class="num">08</span><h4>Mantenimiento y soporte</h4><p>Preventivo programado, repuestos y capacitación.</p></div>
+        <div class="svc"><span class="num">06</span><h4>Plataforma de datos</h4><p>Nube, series de tiempo, API y tablero web por edificación y agregado por localidad.</p></div>
+        <div class="svc"><span class="num">07</span><h4>Montaje y puesta en marcha</h4><p>Adecuaciones menores, integración y pruebas de estanqueidad, presión y disipación térmica.</p></div>
+        <div class="svc"><span class="num">08</span><h4>Mantenimiento y soporte</h4><p>Preventivo programado, atención de fallas, repuestos y capacitación del personal.</p></div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       05 · ESTRATEGIA (Canvas + PESTEL)
+       DIFERENCIACIÓN
   ============================================================= -->
-  <section id="estrategia" class="band bracketed reveal">
+  <section class="band band-foam reveal">
     <div class="container">
-      <div class="eyebrow"><span class="n">§05</span> Análisis estratégico</div>
-      <div class="section-head">
-        <h2>Modelo Canvas y entorno PESTEL</h2>
-        <p>El análisis interno (Canvas) y externo (PESTEL) que sustenta la prefactibilidad del proyecto.</p>
+      <div class="diff-banner">
+        <p class="quote-big">«La lluvia se capta. El sistema la trata. El servidor la aprovecha. El dato lo demuestra.»</p>
+        <p>En Bogotá hay quien instala tanques de agua lluvia y hay quien vende refrigeración para centros de datos — pero son negocios separados que no se hablan entre sí. La diferencia de SICAL S.A.S. está en tratarlos como un solo sistema de agua, e instrumentarlo para que el ahorro sea demostrable y no una promesa comercial.</p>
       </div>
-      <div class="estrategia-grid">
-        <button class="pestel-frame panel" id="openLightbox" aria-label="Ampliar el análisis Canvas y PESTEL">
-          <img src="pestel.png" alt="Análisis Canvas (socios clave, actividades, propuesta de valor, relación con usuarios, canales, segmentos, recursos clave, estructura de costos, fuentes de ingreso) y PESTEL (político, económico, social, tecnológico, ecológico, legal) del proyecto SICAL S.A.S.">
-          <span class="zoomtag">↗ ampliar</span>
-        </button>
-        <div>
-          <p>Por el lado interno, el Canvas muestra una propuesta de valor sostenida en proveedores hidráulicos y térmicos, universidades y entes certificadores como socios clave, y en la venta, el mantenimiento y la consultoría de datos como fuentes de ingreso.</p>
-          <p class="quote">«Combina sostenibilidad ambiental e innovación tecnológica, con normativa favorable y demanda creciente.»</p>
-          <p>El entorno PESTEL confirma la oportunidad: normativa de uso eficiente del agua (Resolución 0330 de 2017), escasez hídrica urbana creciente, avances en enfriamiento líquido e IoT, y el marco legal de la Ley 1258 de 2008 para la constitución como S.A.S.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       ALCANCE / ENFOQUE / PÚBLICO OBJETIVO
+  ============================================================= -->
+  <section class="band band-paper reveal">
+    <div class="container">
+      <div class="eyebrow"><span class="n">05</span> Alcance y operación</div>
+      <div class="section-head">
+        <h2>Dónde y cómo operamos</h2>
+      </div>
+      <div class="scope-grid" style="margin-bottom:48px;">
+        <div class="scope-card panel">
+          <div class="eyebrow">Alcance inicial</div>
+          <p>En su etapa inicial, SICAL S.A.S. concentra su operación en Bogotá D.C. y los municipios de la Sabana, en edificaciones existentes con cubierta aprovechable y demanda de agua no potable. No ejecuta obra civil mayor, no construye edificaciones y no potabiliza agua para consumo humano.</p>
+        </div>
+        <div class="scope-card panel">
+          <div class="eyebrow">Enfoque de operación</div>
+          <p>Cuatro disciplinas trabajan integradas en la Dirección de Ingenierías — hidráulica, térmica, sistemas e instrumentación y civil —, articuladas por la Dirección de Proyectos: por cada contrato se conforma un equipo temporal sin modificar la estructura funcional de la empresa.</p>
+        </div>
+        <div class="scope-card panel">
+          <div class="eyebrow">Crecimiento</div>
+          <p>A medida que consolide su capacidad técnica y financiera, la empresa ampliará su cobertura a otras ciudades del país y a proyectos de mayor escala, incluidos centros de datos de propósito específico.</p>
+        </div>
+      </div>
+      <div class="section-head" style="margin-bottom:28px;">
+        <h2 style="font-size:1.5rem;">Público objetivo</h2>
+      </div>
+      <div class="audience-grid">
+        <div class="audience panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h1m4 0h1"/></svg>
+          <p>Administradores de propiedad horizontal y conjuntos residenciales con cubiertas amplias y alto consumo en zonas comunes.</p>
+        </div>
+        <div class="audience panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 21V5a2 2 0 0 1 2-2h5v18M15 21V11h5a2 2 0 0 1 2 2v8M9 7h1m-1 4h1m-1 4h1"/></svg>
+          <p>Edificios corporativos e institucionales con sala de servidores o cuarto técnico propio.</p>
+        </div>
+        <div class="audience panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg>
+          <p>Centros de datos pequeños y medianos y proveedores de servicios de cómputo local.</p>
+        </div>
+        <div class="audience panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 2 8l10 5 10-5-10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>
+          <p>Universidades, colegios, hospitales, hoteles y centros comerciales con alto consumo no potable.</p>
+        </div>
+        <div class="audience panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M6 21V10l6-5 6 5v11M10 21v-6h4v6"/></svg>
+          <p>Entidades públicas del Distrito Capital y constructoras que deban acreditar criterios de construcción sostenible.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       06 · IMPACTO
+       ORGANIZACIÓN
   ============================================================= -->
-  <section id="impacto" class="band bracketed reveal">
+  <section id="organizacion" class="band band-foam reveal">
     <div class="container">
-      <div class="eyebrow"><span class="n">§06</span> Impacto y visión</div>
+      <div class="eyebrow"><span class="n">06</span> Organización</div>
       <div class="section-head">
-        <h2>Hacia 2030</h2>
-        <p>SICAL se proyecta como una empresa de referencia en gestión eficiente del agua y enfriamiento sostenible para edificaciones con infraestructura tecnológica.</p>
+        <h2>Estructura y liderazgo</h2>
+        <p>SICAL S.A.S. adopta una estructura funcional permanente por departamentos. Del Gerente General dependen seis frentes; por cada proyecto contratado, la Dirección de Proyectos arma un equipo temporal con personal de los departamentos técnicos, sin alterar la estructura de la sociedad.</p>
       </div>
-      <div class="stat-row" id="statRow">
-        <div class="stat"><b data-count="30">0</b><span>sistemas integrales a 2030</span></div>
-        <div class="stat"><b data-count="800">0</b><span>mm de lluvia aprovechable al año</span></div>
-        <div class="stat"><b data-count="6">0</b><span>indicadores en el tablero</span></div>
-        <div class="stat"><b data-count="31">0</b><span>cargos en la estructura</span></div>
+
+      <div class="org-stat-row reveal">
+        <div class="org-stat"><b>7</b><span>departamentos</span></div>
+        <div class="org-stat"><b>31</b><span>cargos</span></div>
+        <div class="org-stat"><b>39</b><span>plazas en planta</span></div>
+        <div class="org-stat"><b>2</b><span>proyectos simultáneos de escala media</span></div>
       </div>
-      <div class="mv-grid">
-        <div>
+
+      <div class="orgchart reveal">
+        <div class="org-top">
+          <div class="org-node-top">Gerente General<span>Representación legal · Asamblea General de Accionistas</span></div>
+        </div>
+        <div class="org-connector"></div>
+        <div class="org-row">
+          <div class="org-cell">
+            <div class="org-box panel"><b>Dirección de Proyectos</b><span>3 plazas</span></div>
+          </div>
+          <div class="org-cell">
+            <div class="org-box panel"><b>Talento Humano y SST</b><span>4 plazas</span></div>
+          </div>
+          <div class="org-cell">
+            <div class="org-box panel"><b>Dirección de Ingenierías</b><span>17 plazas</span></div>
+          </div>
+          <div class="org-cell">
+            <div class="org-box panel"><b>Instalaciones y Mantenimiento</b><span>6 plazas</span></div>
+          </div>
+          <div class="org-cell">
+            <div class="org-box panel"><b>Finanzas y Contabilidad</b><span>3 plazas</span></div>
+          </div>
+          <div class="org-cell">
+            <div class="org-box panel"><b>Administración</b><span>5 plazas</span></div>
+          </div>
+        </div>
+      </div>
+      <p style="text-align:center; color:var(--ink-faint); font-size:0.88rem; margin:-32px 0 44px;">La Dirección de Ingenierías reúne las coordinaciones de Ingeniería Hidráulica, Térmica, de Sistemas e Instrumentación, y Civil.</p>
+
+      <div class="leader-grid">
+        <div class="leader panel"><b>Gerente General</b><p>Dirige la empresa, la representa legalmente y responde ante la Asamblea General de Accionistas por el resultado del ejercicio.</p></div>
+        <div class="leader panel"><b>Director de Proyectos</b><p>Planea, ejecuta, controla y cierra los proyectos de la empresa dentro del alcance, el plazo y el presupuesto pactados.</p></div>
+        <div class="leader panel"><b>Director de Ingenierías</b><p>Dirige y armoniza el trabajo de Hidráulica, Térmica, Sistemas e Instrumentación y Civil, garantizando la integración técnica entre disciplinas.</p></div>
+        <div class="leader panel"><b>Coordinador de Talento Humano y SST</b><p>Gestiona el ciclo completo del personal y coordina el Sistema de Gestión de la Seguridad y Salud en el Trabajo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MISIÓN Y VISIÓN
+  ============================================================= -->
+  <section class="band band-paper reveal">
+    <div class="container">
+      <div class="eyebrow"><span class="n">07</span> Misión y visión</div>
+      <div class="mv-grid" style="margin-top:28px;">
+        <div class="mv-card panel">
           <h3>Misión</h3>
           <p>Diseñamos, montamos y mantenemos soluciones de ingeniería y tecnología orientadas al uso eficiente del agua y la energía en edificaciones, mediante el aprovechamiento del agua lluvia, los sistemas de enfriamiento líquido y la automatización inteligente.</p>
+          <p>Integramos conocimientos de ingeniería hidráulica, térmica, civil, electrónica y de sistemas para ofrecer soluciones confiables, eficientes y sostenibles.</p>
         </div>
-        <div>
+        <div class="mv-card panel">
           <h3>Visión 2030</h3>
-          <p>Ser reconocida en Bogotá y la región como una empresa innovadora en gestión eficiente del agua y refrigeración sostenible, con al menos treinta sistemas instalados y un ahorro de agua potable medible y verificable.</p>
+          <p>Para el año 2030, SICAL S.A.S. será reconocida en Bogotá y la región como una empresa innovadora en gestión eficiente del agua y refrigeración sostenible para edificaciones con infraestructura tecnológica.</p>
+          <p>La empresa se propone implementar al menos treinta sistemas integrales y lograr un ahorro de agua potable medible y verificable en las edificaciones intervenidas.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       07 · EQUIPO
+       COMPROMISOS / POLÍTICAS
   ============================================================= -->
-  <section id="equipo" class="band bracketed reveal">
+  <section class="band band-foam reveal">
     <div class="container">
-      <div class="eyebrow"><span class="n">§07</span> Equipo</div>
+      <div class="eyebrow"><span class="n">08</span> Compromisos</div>
+      <div class="section-head">
+        <h2>Las políticas que sostienen la operación</h2>
+        <p>SICAL S.A.S. adopta doce políticas internas; estas son los seis compromisos que más tocan al cliente y a su entorno.</p>
+      </div>
+      <div class="policy-grid">
+        <div class="policy panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m9 12 2 2 4-4M12 3l8 4v5c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V7l8-4Z"/></svg>
+          <h4>Calidad</h4>
+          <p>Compromiso con la calidad de los diseños, los montajes, la puesta en marcha y el mantenimiento, y con los requisitos técnicos, legales y contractuales de cada cliente.</p>
+        </div>
+        <div class="policy panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5ZM5 11v2a7 7 0 0 0 14 0v-2M12 20v2"/></svg>
+          <h4>Seguridad y Salud en el Trabajo</h4>
+          <p>Protección de trabajadores, contratistas y visitantes en actividades de montaje: trabajo en alturas, riesgo eléctrico, equipos a presión y espacios confinados.</p>
+        </div>
+        <div class="policy panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c3 4 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-7 6-11Z"/></svg>
+          <h4>Ambiental y uso eficiente del agua</h4>
+          <p>Reduce el impacto ambiental de la operación y asegura que el uso eficiente del agua y la energía, razón de ser del producto, se cumpla también puertas adentro.</p>
+        </div>
+        <div class="policy panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <h4>Seguridad de la información</h4>
+          <p>Preserva la confidencialidad, integridad y disponibilidad de los diseños, el firmware, el código y la telemetría de los sistemas instalados.</p>
+        </div>
+        <div class="policy panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+          <h4>Servicio al cliente</h4>
+          <p>Atención durante todo el ciclo del sistema — propuesta, diseño, montaje, entrega y mantenimiento posventa — con un único interlocutor por proyecto.</p>
+        </div>
+        <div class="policy panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <h4>Política social</h4>
+          <p>Compromiso con las comunidades de las edificaciones intervenidas, la formación de nuevos profesionales y el aporte al uso responsable del agua en Bogotá.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       DATOS LEGALES
+  ============================================================= -->
+  <section class="band band-paper reveal">
+    <div class="container">
+      <div class="eyebrow"><span class="n">09</span> Constitución</div>
+      <div class="section-head">
+        <h2>Una Sociedad por Acciones Simplificada</h2>
+        <p>La empresa se constituye como S.A.S., conforme a la Ley 1258 de 2008, por ser la figura más flexible para una empresa de carácter tecnológico e ingenieril.</p>
+      </div>
+      <div class="legal-grid">
+        <dl class="legal-card panel">
+          <dt>Tipo</dt><dd>Sociedad por Acciones Simplificada (S.A.S.)</dd>
+          <dt>Norma</dt><dd>Ley 1258 de 2008 y, en lo no previsto, el Código de Comercio</dd>
+          <dt>Accionistas</dt><dd>Tres (3) accionistas fundadores, personas naturales</dd>
+          <dt>Responsabilidad</dt><dd>Limitada al monto de los aportes</dd>
+          <dt>Administración</dt><dd>Gerente General, con representación legal; suplente: Director de Proyectos</dd>
+          <dt>Duración</dt><dd>Indefinida</dd>
+          <dt>Tamaño</dt><dd>Pequeña empresa, sector servicios (Decreto 957 de 2019)</dd>
+        </dl>
+        <div class="legal-text panel">
+          <p><strong style="color:var(--deep)">Objeto social.</strong> El diseño, la consultoría, el suministro, el montaje, la puesta en marcha, el monitoreo y el mantenimiento de sistemas de captación, tratamiento, almacenamiento y distribución de agua lluvia para usos no potables; de sistemas de enfriamiento líquido y de recuperación de calor residual para salas de servidores; y de la instrumentación, el control automático y las plataformas de software que los operan, monitorean y reportan.</p>
+          <p style="margin-top:14px;">La sociedad no ejecuta obra civil mayor, no construye edificaciones y no presta el servicio público de acueducto ni potabiliza agua para consumo humano.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       EQUIPO FUNDADOR
+  ============================================================= -->
+  <section id="equipo" class="band band-foam reveal">
+    <div class="container">
+      <div class="eyebrow"><span class="n">10</span> Equipo fundador</div>
       <div class="section-head">
         <h2>Quiénes están detrás de SICAL</h2>
       </div>
-      <div class="equipo-grid">
-        <div>
-          <ul class="founders">
-            <li class="founder"><b>Juan Andrés Vanegas</b><span>Fundador</span></li>
-            <li class="founder"><b>Julián Muñoz</b><span>Fundador</span></li>
-            <li class="founder"><b>Paula Andrea Villada Álvarez</b><span>Fundadora</span></li>
-          </ul>
+      <div class="founders-grid">
+        <div class="founder-card panel">
+          <div class="founder-avatar">JV</div>
+          <b>Juan Andrés Vanegas</b>
+          <span>Fundador</span>
         </div>
-        <div class="org-card panel">
-          <dl>
-            <dt>Razón social</dt><dd>SICAL S.A.S. — Sociedad por Acciones Simplificada, Ley 1258 de 2008</dd>
-            <dt>Domicilio</dt><dd>Bogotá D.C., Colombia</dd>
-            <dt>Sector</dt><dd>Ingeniería, tecnología, gestión del agua y eficiencia energética en edificaciones</dd>
-            <dt>Institución</dt><dd>Universidad Piloto de Colombia — Facultad de Ingeniería, Programa de Ingeniería de Sistemas</dd>
-            <dt>Fecha</dt><dd>Bogotá D.C., septiembre de 2026</dd>
-          </dl>
+        <div class="founder-card panel">
+          <div class="founder-avatar">JM</div>
+          <b>Julián Muñoz</b>
+          <span>Fundador</span>
+        </div>
+        <div class="founder-card panel">
+          <div class="founder-avatar">PV</div>
+          <b>Paula Andrea Villada Álvarez</b>
+          <span>Fundadora</span>
+        </div>
+      </div>
+      <p class="edu-note">SICAL S.A.S. es un proyecto académico desarrollado para la Universidad Piloto de Colombia — Facultad de Ingeniería, Programa de Ingeniería de Sistemas. La arquitectura técnica completa, el estudio de mercados y el análisis estratégico están documentados en la <a href="academico.html">documentación técnica del proyecto</a>.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CTA FINAL
+  ============================================================= -->
+  <section class="band band-paper reveal">
+    <div class="container">
+      <div class="cta-band">
+        <h2>¿Listo para que su agua lluvia trabaje?</h2>
+        <p>Cada sistema se dimensiona con la precipitación, el área de captación y la carga térmica reales de su edificación. El diagnóstico inicial evalúa la viabilidad antes de comprometer cualquier inversión.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#servicios">Ver el ciclo de servicios</a>
+          <a class="btn btn-ghost" href="academico.html">Explorar la arquitectura técnica →</a>
         </div>
       </div>
     </div>
@@ -913,45 +731,28 @@
   <div class="container">
     <div class="foot-top">
       <div>
+        <div class="foot-brand"><img src="logo.png" alt="SICAL"></div>
         <p class="foot-slogan">«El agua que cae, trabaja.»</p>
-        <p class="foot-status"><span class="live-dot"></span> sistema en línea — consola de operación hídrica</p>
       </div>
-      <span class="brand-chip"><img src="logo.png" alt="SICAL"></span>
+      <nav class="foot-links">
+        <a href="#quienes-somos">Quiénes somos</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#organizacion">Organización</a>
+        <a href="#equipo">Equipo</a>
+        <a href="academico.html">Documentación técnica</a>
+      </nav>
     </div>
     <div class="foot-bottom">
-      <span>SICAL S.A.S. — Sistema Inteligente de Captación y Aprovechamiento de Lluvia</span>
-      <span>Universidad Piloto de Colombia · Ingeniería de Sistemas · Bogotá D.C. · 2026</span>
+      <span>SICAL S.A.S. — Sistema Inteligente de Captación y Aprovechamiento de Lluvia · Bogotá D.C.</span>
+      <span>Proyecto académico — Universidad Piloto de Colombia · Ingeniería de Sistemas · 2026</span>
     </div>
   </div>
 </footer>
-
-<div class="lightbox" id="lightbox" hidden>
-  <button id="closeLightbox">cerrar ✕</button>
-  <img src="pestel.png" alt="Análisis Canvas y PESTEL ampliado">
-</div>
 
 <script>
 (function(){
   "use strict";
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  /* ---- scrollspy + smooth nav ---- */
-  var links = Array.prototype.slice.call(document.querySelectorAll("#navlinks a"));
-  var sections = links.map(function(a){ return document.getElementById(a.getAttribute("data-sec")); }).filter(Boolean);
-  if("IntersectionObserver" in window && sections.length){
-    var spy = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){
-          links.forEach(function(l){ l.classList.remove("active"); });
-          var match = links.find(function(l){ return l.getAttribute("data-sec") === entry.target.id; });
-          if(match) match.classList.add("active");
-        }
-      });
-    }, { rootMargin: "-40% 0px -50% 0px", threshold: 0 });
-    sections.forEach(function(s){ spy.observe(s); });
-  }
-
-  /* ---- reveal on scroll (below-fold only; CSS default already visible as fallback) ---- */
   try{
     var revealEls = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
     if(reduceMotion || !("IntersectionObserver" in window)){
@@ -961,109 +762,13 @@
         entries.forEach(function(entry){
           if(entry.isIntersecting){ entry.target.classList.add("is-visible"); obs.unobserve(entry.target); }
         });
-      }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+      }, { threshold: 0.1, rootMargin: "0px 0px -8% 0px" });
       revealEls.forEach(function(el){ ro.observe(el); });
       setTimeout(function(){ revealEls.forEach(function(el){ el.classList.add("is-visible"); }); }, 3000);
     }
   }catch(e){
     document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("is-visible"); });
   }
-
-  /* ---- animated counters ---- */
-  try{
-    var stats = Array.prototype.slice.call(document.querySelectorAll(".stat b[data-count]"));
-    function animateCount(el){
-      var target = parseInt(el.getAttribute("data-count"), 10) || 0;
-      if(reduceMotion){ el.textContent = target; return; }
-      var start = null, duration = 1100;
-      function step(ts){
-        if(!start) start = ts;
-        var p = Math.min((ts - start) / duration, 1);
-        var eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = Math.round(eased * target);
-        if(p < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-    if("IntersectionObserver" in window && stats.length){
-      var so = new IntersectionObserver(function(entries, obs){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){ animateCount(entry.target); obs.unobserve(entry.target); }
-        });
-      }, { threshold: 0.5 });
-      stats.forEach(function(el){ so.observe(el); });
-      setTimeout(function(){ stats.forEach(function(el){ if(el.textContent === "0") animateCount(el); }); }, 3000);
-    } else {
-      stats.forEach(function(el){ el.textContent = el.getAttribute("data-count"); });
-    }
-  }catch(e){}
-
-  /* ---- lightbox ---- */
-  try{
-    var openBtn = document.getElementById("openLightbox");
-    var closeBtn = document.getElementById("closeLightbox");
-    var box = document.getElementById("lightbox");
-    function open(){ box.hidden = false; closeBtn.focus(); }
-    function close(){ box.hidden = true; openBtn.focus(); }
-    if(openBtn && box){
-      openBtn.addEventListener("click", open);
-      closeBtn.addEventListener("click", close);
-      box.addEventListener("click", function(e){ if(e.target === box) close(); });
-      document.addEventListener("keydown", function(e){ if(e.key === "Escape" && !box.hidden) close(); });
-    }
-  }catch(e){}
-
-  /* ---- hero rain canvas ---- */
-  try{
-    if(!reduceMotion){
-      var canvas = document.getElementById("rain");
-      var ctx = canvas.getContext("2d");
-      var hero = document.getElementById("hero");
-      var drops = [], W, H, dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-      function size(){
-        W = hero.clientWidth; H = hero.clientHeight;
-        canvas.width = W * dpr; canvas.height = H * dpr;
-        canvas.style.width = W + "px"; canvas.style.height = H + "px";
-        ctx.setTransform(dpr,0,0,dpr,0,0);
-        var count = Math.max(24, Math.round(W / 42));
-        drops = [];
-        for(var i=0;i<count;i++){ drops.push(makeDrop(true)); }
-      }
-      function makeDrop(initial){
-        return {
-          x: Math.random() * W,
-          y: initial ? Math.random() * H : -20,
-          len: 14 + Math.random() * 22,
-          speed: 2.4 + Math.random() * 3.2,
-          drift: 0.5 + Math.random() * 0.4,
-          alpha: 0.1 + Math.random() * 0.2,
-          amber: Math.random() < 0.22
-        };
-      }
-      function tick(){
-        ctx.clearRect(0,0,W,H);
-        ctx.lineCap = "round";
-        for(var i=0;i<drops.length;i++){
-          var d = drops[i];
-          ctx.strokeStyle = d.amber ? "#ffb224" : "#49e3c6";
-          ctx.globalAlpha = d.alpha;
-          ctx.lineWidth = 1.1;
-          ctx.beginPath();
-          ctx.moveTo(d.x, d.y);
-          ctx.lineTo(d.x - d.len * d.drift * 0.18, d.y + d.len);
-          ctx.stroke();
-          d.y += d.speed; d.x -= d.speed * d.drift * 0.18;
-          if(d.y > H + 20){ drops[i] = makeDrop(false); }
-        }
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(tick);
-      }
-      size();
-      window.addEventListener("resize", size);
-      requestAnimationFrame(tick);
-    }
-  }catch(e){}
 })();
 </script>
 
