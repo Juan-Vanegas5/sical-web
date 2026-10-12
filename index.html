@@ -3,367 +3,379 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SICAL</title>
+<title>SICAL — Sistema Inteligente de Captación y Aprovechamiento de Lluvia</title>
+<meta name="description" content="SICAL capta el agua lluvia de las cubiertas de Bogotá, la trata y la entrega a los usos no potables de la edificación, usando el mismo circuito para enfriar salas de servidores. Todo instrumentado y auditable desde un tablero.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;900&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Literata:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <style>
   /* ---------------------------------------------------------------
-     TOKENS
+     TOKENS — single committed look: an operations console
   --------------------------------------------------------------- */
   :root{
-    --paper: #E1EBE8;
-    --paper-raised: #FFFFFF;
-    --ink: #081620;
-    --ink-soft: #27404D;
-    --ink-faint: #4C6670;
-    --primary: #0B5878;
-    --accent: #0E8A96;
-    --alarm: #B6411D;
-    --line: rgba(8,22,32,0.26);
-    --line-soft: rgba(8,22,32,0.14);
-    --shadow: 0 24px 48px -28px rgba(8,22,32,0.45);
-    --on-dark: #EAF2F2;
+    --void: #06090a;
+    --panel: #0c1416;
+    --panel-raised: #11191c;
+    --panel-hi: #162124;
+    --ink: #e9f5f1;
+    --ink-soft: #a7c0ba;
+    --ink-faint: #5c716c;
+    --amber: #ffb224;
+    --amber-soft: #cf9a4e;
+    --cyan: #49e3c6;
+    --cyan-soft: #2f8f7c;
+    --alarm: #ff5a3c;
+    --line: rgba(233,245,241,0.14);
+    --line-soft: rgba(233,245,241,0.07);
+    --line-strong: rgba(233,245,241,0.26);
+    --shadow: 0 30px 70px -34px rgba(0,0,0,0.8);
+    --glow-amber: 0 0 0 1px rgba(255,178,36,0.4), 0 20px 46px -22px rgba(255,178,36,0.38);
+    --glow-cyan: 0 0 0 1px rgba(73,227,198,0.38), 0 20px 46px -22px rgba(73,227,198,0.34);
 
-    --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
-    --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
-    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper: #071320;
-      --paper-raised: #122C3F;
-      --ink: #F2F8F8;
-      --ink-soft: #AFCBD5;
-      --ink-faint: #8AAAB6;
-      --primary: #6FCDEE;
-      --accent: #4CECDC;
-      --alarm: #FFA584;
-      --line: rgba(242,248,248,0.24);
-      --line-soft: rgba(242,248,248,0.13);
-      --shadow: 0 24px 48px -28px rgba(0,0,0,0.65);
-      --on-dark: #F2F8F8;
-    }
-  }
-  :root[data-theme="dark"]{
-    --paper: #071320;
-    --paper-raised: #122C3F;
-    --ink: #F2F8F8;
-    --ink-soft: #AFCBD5;
-    --ink-faint: #8AAAB6;
-    --primary: #6FCDEE;
-    --accent: #4CECDC;
-    --alarm: #FFA584;
-    --line: rgba(242,248,248,0.24);
-    --line-soft: rgba(242,248,248,0.13);
-    --shadow: 0 24px 48px -28px rgba(0,0,0,0.65);
-    --on-dark: #F2F8F8;
+    --font-display: "Unbounded", "Arial Narrow", sans-serif;
+    --font-body: "Literata", Georgia, "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
 
   /* ---------------------------------------------------------------
      RESET / BASE
   --------------------------------------------------------------- */
   *,*::before,*::after{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
   body{
     margin:0;
-    background: var(--paper);
+    background: var(--void);
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 17px;
-    line-height: 1.6;
+    line-height: 1.62;
     -webkit-font-smoothing: antialiased;
+    position: relative;
+    background-image:
+      radial-gradient(ellipse 1200px 600px at 12% -10%, rgba(73,227,198,0.07), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 92% 8%, rgba(255,178,36,0.05), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(233,245,241,0.035) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgba(233,245,241,0.035) 0 1px, transparent 1px 44px);
+  }
+  /* scanline + grain atmosphere, decorative, behind content */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1;
+    background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.26) 0 1px, transparent 1px 3px);
+    opacity:.1; mix-blend-mode:overlay;
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.5;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="140" height="140" filter="url(%23n)" opacity="0.05"/></svg>');
   }
   img{ max-width:100%; display:block; }
   h1,h2,h3,h4{ margin:0; text-wrap: balance; }
   p{ margin:0; }
   a{ color: inherit; }
   ul{ margin:0; padding:0; list-style:none; }
-  .container{
-    width:100%;
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
+  ::selection{ background: var(--amber); color: var(--void); }
+  .container{ width:100%; max-width: 1180px; margin: 0 auto; padding: 0 28px; position:relative; z-index:2; }
   @media (max-width: 640px){ .container{ padding: 0 20px; } }
 
   .eyebrow{
     font-family: var(--font-mono);
     font-size: 0.78rem;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--primary);
+    color: var(--amber);
     display:flex;
     align-items:center;
-    gap: 10px;
+    gap: 9px;
   }
-  .eyebrow .n{ opacity:.65; }
+  .eyebrow .n{ opacity:.6; }
+  .eyebrow::before, .eyebrow::after{ content:"—"; opacity:.4; }
 
   .section-head{
     display:flex;
     flex-direction:column;
     gap: 14px;
-    max-width: 680px;
-    margin-bottom: 48px;
+    max-width: 700px;
+    margin: 18px 0 52px;
   }
   .section-head h2{
-    font-family: var(--font-body);
+    font-family: var(--font-display);
     font-weight: 700;
-    font-size: clamp(1.8rem, 1.3rem + 2vw, 2.6rem);
+    font-size: clamp(1.7rem, 1.25rem + 1.9vw, 2.5rem);
     letter-spacing: -0.01em;
+    color: var(--ink);
   }
-  .section-head p{
-    color: var(--ink-soft);
-    font-size: 1.08rem;
-  }
+  .section-head p{ color: var(--ink-soft); font-size: 1.05rem; }
 
-  section{ position:relative; }
-  .band{ padding: 100px 0; border-top: 1px solid var(--line-soft); }
-  .band-dark{
-    background: var(--ink);
-    color: var(--on-dark);
-    border-top: 1px solid rgba(234,242,242,0.12);
-  }
-  .band-dark .eyebrow{ color: var(--accent); }
-  .band-dark .section-head p{ color: #9FBAC6; }
+  section{ position:relative; z-index:2; }
+  .band{ padding: 96px 0; border-top: 1px solid var(--line-soft); background: var(--void); }
 
-  /* drafting-sheet corner ticks on major sections */
-  .ticked{ position:relative; }
-  .ticked::before, .ticked::after{
-    content:"";
-    position:absolute;
-    top: 46px; width:18px; height:18px;
-    border-top:1.5px solid var(--line);
-    opacity:.8;
+  /* HUD corner-bracket treatment for whole sections */
+  .bracketed{ position:relative; }
+  .bracketed::before, .bracketed::after{
+    content:""; position:absolute; top: 40px; width:20px; height:20px; opacity:.7;
   }
-  .ticked::before{ left: 28px; border-left:1.5px solid var(--line); }
-  .ticked::after{ right: 28px; border-right:1.5px solid var(--line); }
-  .band-dark.ticked::before, .band-dark.ticked::after{ border-color: rgba(234,242,242,0.3); }
+  .bracketed::before{ left: 28px; border-top:1.5px solid var(--cyan-soft); border-left:1.5px solid var(--cyan-soft); }
+  .bracketed::after{ right: 28px; border-top:1.5px solid var(--cyan-soft); border-right:1.5px solid var(--cyan-soft); }
 
   .btn{
     font-family: var(--font-mono);
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     letter-spacing: 0.04em;
     padding: 14px 22px;
-    border-radius: 2px;
+    border-radius: 3px;
     display:inline-flex;
     align-items:center;
     gap:10px;
     cursor:pointer;
     text-decoration:none;
-    transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease;
+    transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease, border-color .25s ease;
     border: 1px solid transparent;
   }
   .btn:hover{ transform: translateY(-2px); }
-  .btn-primary{ background: var(--on-dark); color: var(--ink); }
-  .btn-primary:hover{ box-shadow: 0 14px 30px -14px rgba(0,0,0,0.5); }
-  .btn-ghost{ border-color: rgba(234,242,242,0.4); color: var(--on-dark); }
-  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); }
+  .btn-primary{ background: var(--amber); color: #1a1205; border-color: var(--amber); font-weight:600; }
+  .btn-primary:hover{ box-shadow: var(--glow-amber); }
+  .btn-ghost{ border-color: var(--line-strong); color: var(--ink); }
+  .btn-ghost:hover{ border-color: var(--cyan); color: var(--cyan); }
+
+  /* ---------------------------------------------------------------
+     TICKER — decorative live-readout strip
+  --------------------------------------------------------------- */
+  .ticker{
+    position: fixed; top:0; left:0; right:0; z-index: 70;
+    height: 30px; overflow:hidden;
+    background: #040708;
+    border-bottom: 1px solid var(--line-soft);
+    display:flex; align-items:center;
+  }
+  .ticker-track{
+    display:flex; align-items:center; gap:46px; white-space:nowrap;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing:.06em; color: var(--ink-faint);
+    animation: ticker 32s linear infinite;
+    padding-left: 46px;
+  }
+  .ticker-track span{ color: var(--cyan-soft); }
+  .ticker-track b{ color: var(--ink-soft); font-weight:500; }
+  @keyframes ticker{ from{ transform: translateX(0); } to{ transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce){ .ticker-track{ animation:none; } }
+
+  .live-dot{
+    width:6px; height:6px; border-radius:50%; background: var(--amber); display:inline-block;
+    box-shadow: 0 0 0 0 rgba(255,178,36,0.6); animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,178,36,0.5);} 50%{ box-shadow:0 0 0 5px rgba(255,178,36,0);} }
+  @media (prefers-reduced-motion: reduce){ .live-dot{ animation:none; } }
 
   /* ---------------------------------------------------------------
      NAV
   --------------------------------------------------------------- */
   .nav{
-    position: fixed; top:0; left:0; right:0; z-index: 60;
-    background: color-mix(in srgb, var(--ink) 88%, transparent);
+    position: fixed; top:30px; left:0; right:0; z-index: 60;
+    background: rgba(6,9,10,0.86);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(234,242,242,0.12);
+    border-bottom: 1px solid var(--line-soft);
   }
   .nav-inner{
-    max-width: 1180px; margin: 0 auto; padding: 14px 28px;
+    max-width: 1180px; margin: 0 auto; padding: 13px 28px;
     display:flex; align-items:center; justify-content:space-between; gap: 24px;
   }
   .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
   .brand-chip{
-    background:#fff; border-radius:4px; padding: 4px 6px 2px;
+    background:#fff; border-radius:4px; padding: 4px 6px 2px; border:1px solid rgba(255,178,36,0.4);
     display:flex; align-items:center; line-height:0;
   }
-  .brand-chip img{ height:20px; width:auto; }
-  .brand-word{ font-family: var(--font-mono); font-size:0.95rem; letter-spacing:0.08em; color:#fff; }
+  .brand-chip img{ height:19px; width:auto; }
+  .brand-word{ font-family: var(--font-mono); font-size:0.9rem; letter-spacing:0.07em; color:var(--ink); }
+  .brand-word em{ font-style:normal; color: var(--amber); }
   .navlinks{
     display:flex; gap: 2px; overflow-x:auto;
-    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing:.03em;
+    font-family: var(--font-mono); font-size: 0.75rem; letter-spacing:.02em;
     scrollbar-width:none;
   }
   .navlinks::-webkit-scrollbar{ display:none; }
   .navlinks a{
-    color:#AFC4CC; text-decoration:none; white-space:nowrap;
-    padding: 8px 12px; border-radius: 2px; transition: color .2s ease, background .2s ease;
+    color: var(--ink-faint); text-decoration:none; white-space:nowrap;
+    padding: 8px 11px; border-radius: 2px; transition: color .2s ease, background .2s ease;
   }
-  .navlinks a:hover{ color:#fff; }
-  .navlinks a.active{ color:#fff; background: rgba(255,255,255,0.08); }
-  @media (max-width: 860px){ .navlinks{ max-width: 46vw; } }
+  .navlinks a:hover{ color: var(--ink); }
+  .navlinks a.active{ color: var(--amber); background: rgba(255,178,36,0.08); }
+  @media (max-width: 860px){ .navlinks{ max-width: 44vw; } }
   @media (max-width: 560px){ .navlinks{ display:none; } }
 
   /* ---------------------------------------------------------------
      HERO
   --------------------------------------------------------------- */
   .hero{
-    background: var(--ink);
-    color: var(--on-dark);
-    padding: 168px 0 96px;
+    padding: 196px 0 100px;
     overflow:hidden;
     position:relative;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(234,242,242,0.05) 0 1px, transparent 1px 48px),
-      repeating-linear-gradient(90deg, rgba(234,242,242,0.05) 0 1px, transparent 1px 48px);
   }
-  #rain{ position:absolute; inset:0; width:100%; height:100%; opacity:.55; }
+  #rain{ position:absolute; inset:0; width:100%; height:100%; opacity:.6; z-index:1; }
   .hero-inner{ position:relative; z-index:2; }
   .hero-top{
     display:flex; align-items:flex-start; justify-content:space-between; gap: 40px;
-    margin-bottom: 56px; flex-wrap:wrap;
+    margin-bottom: 44px; flex-wrap:wrap;
   }
   .hero-logo{
-    background:#fff; border-radius: 8px; padding: 14px 18px 10px;
+    background:#fff; border-radius: 6px; padding: 12px 16px 8px; border:1px solid rgba(255,178,36,0.45);
     box-shadow: var(--shadow);
   }
-  .hero-logo img{ height: 46px; width:auto; }
+  .hero-logo img{ height: 40px; width:auto; }
+  .boot-line{
+    font-family: var(--font-mono); font-size:0.78rem; color: var(--cyan); letter-spacing:.04em;
+    margin-bottom: 14px; display:flex; align-items:center; gap:8px;
+  }
   .hero h1{
     font-family: var(--font-display);
     font-weight: 900;
     text-transform: uppercase;
-    font-size: clamp(2.6rem, 1.7rem + 4.2vw, 5.4rem);
-    line-height: 0.94;
-    letter-spacing: 0.002em;
-    max-width: 16ch;
-    margin: 18px 0 26px;
+    font-size: clamp(2.4rem, 1.5rem + 4vw, 5rem);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    max-width: 15ch;
+    margin: 0 0 26px;
+    color: var(--ink);
   }
-  .hero h1 em{ font-style:normal; color: var(--accent); }
+  .hero h1 em{ font-style:normal; color: var(--amber); }
   .hero-sub{
-    font-size: 1.22rem;
-    max-width: 52ch;
-    color:#C3D6DB;
+    font-size: 1.2rem;
+    max-width: 54ch;
+    color: var(--ink-soft);
     margin-bottom: 40px;
   }
   .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom: 64px; }
   .hero-facts{
     display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
-    gap: 0; border-top:1px solid rgba(234,242,242,0.18);
+    gap: 1px; background: var(--line-soft); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden;
   }
-  .hero-facts div{ padding: 18px 20px 0; border-left: 1px solid rgba(234,242,242,0.18); }
-  .hero-facts div:first-child{ border-left:none; padding-left:0; }
+  .hero-facts div{ padding: 18px 20px; background: rgba(12,20,22,0.7); }
   .hero-facts b{
     display:block; font-family: var(--font-display); font-weight:700;
-    font-size: 2rem; color:#fff;
+    font-size: 1.9rem; color: var(--ink); font-variant-numeric: tabular-nums;
   }
-  .hero-facts span{ font-family: var(--font-mono); font-size:0.76rem; color:#9FBAC6; letter-spacing:.02em; }
+  .hero-facts span{ font-family: var(--font-mono); font-size:0.74rem; color: var(--ink-faint); letter-spacing:.02em; }
 
   /* ---------------------------------------------------------------
      REVEAL (below-fold only — hero/fold content never gated on JS)
   --------------------------------------------------------------- */
-  .reveal{ opacity:0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal{ opacity:0; transform: translateY(20px); transition: opacity .7s ease, transform .7s ease; }
   .reveal.is-visible{ opacity:1; transform:none; }
   @media (prefers-reduced-motion: reduce){
     .reveal{ opacity:1 !important; transform:none !important; transition:none !important; }
   }
 
   /* ---------------------------------------------------------------
+     PANEL — base card/box unit used across sections
+  --------------------------------------------------------------- */
+  .panel{
+    background: var(--panel-raised); border:1px solid var(--line); border-radius:8px;
+    position:relative; box-shadow: var(--shadow);
+  }
+  .panel::before, .panel::after{
+    content:""; position:absolute; width:10px; height:10px; pointer-events:none; opacity:0;
+    transition: opacity .25s ease;
+  }
+  .panel::before{ top:-1px; left:-1px; border-top:1.5px solid var(--amber); border-left:1.5px solid var(--amber); }
+  .panel::after{ bottom:-1px; right:-1px; border-bottom:1.5px solid var(--amber); border-right:1.5px solid var(--amber); }
+  .panel:hover::before, .panel:hover::after{ opacity:1; }
+
+  /* ---------------------------------------------------------------
      PROBLEMA
   --------------------------------------------------------------- */
-  .problema-grid{ display:grid; grid-template-columns: 1.1fr 1.6fr; gap: 56px; align-items:start; }
+  .problema-grid{ display:grid; grid-template-columns: 1.1fr 1.6fr; gap: 50px; align-items:start; }
   @media (max-width: 860px){ .problema-grid{ grid-template-columns:1fr; } }
   .locale{
-    font-family: var(--font-mono); font-size:0.86rem; color: var(--ink-soft);
-    border: 1px solid var(--line); border-radius: 6px; padding: 20px;
-    background: var(--paper-raised);
+    font-family: var(--font-mono); font-size:0.85rem; color: var(--ink-soft);
+    padding: 20px;
   }
-  .locale dt{ color: var(--ink-faint); font-size:0.74rem; text-transform:uppercase; letter-spacing:.08em; margin-top:14px; }
+  .locale dt{ color: var(--ink-faint); font-size:0.72rem; text-transform:uppercase; letter-spacing:.07em; margin-top:14px; }
   .locale dt:first-child{ margin-top:0; }
   .locale dd{ margin:2px 0 0; color: var(--ink); }
 
-  .prob-groups{ display:flex; flex-direction:column; gap:18px; }
-  .prob-group{
-    border:1px solid var(--line); border-radius:8px; background: var(--paper-raised);
-    padding: 22px 24px; box-shadow: var(--shadow);
-  }
+  .prob-groups{ display:flex; flex-direction:column; gap:16px; }
+  .prob-group{ padding: 22px 24px; }
   .prob-group header{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
-  .prob-group h3{ font-family:var(--font-body); font-weight:600; font-size:1.08rem; }
-  .prob-group .count{ font-family:var(--font-mono); font-size:0.78rem; color: var(--primary); white-space:nowrap; }
+  .prob-group h3{ font-family:var(--font-display); font-weight:500; font-size:1.02rem; color: var(--ink); }
+  .prob-group .count{ font-family:var(--font-mono); font-size:0.76rem; color: var(--cyan); white-space:nowrap; }
   .prob-group ul{ display:flex; flex-direction:column; gap:8px; }
   .prob-group li{ color: var(--ink-soft); font-size:0.98rem; padding-left:18px; position:relative; }
   .prob-group li::before{
-    content:""; position:absolute; left:0; top:0.55em; width:7px; height:7px;
-    background: var(--primary); border-radius:1px;
+    content:""; position:absolute; left:0; top:0.6em; width:6px; height:6px;
+    background: var(--amber); border-radius:1px;
   }
 
   /* ---------------------------------------------------------------
      CARD GRIDS (valor propuesto / servicios)
   --------------------------------------------------------------- */
-  .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 22px; }
-  .card{
-    background: var(--paper-raised); border:1px solid var(--line); border-radius:10px;
-    padding: 26px 24px; box-shadow: var(--shadow);
-    transition: transform .3s ease, box-shadow .3s ease;
-  }
+  .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 20px; }
+  .card{ padding: 26px 24px; transition: transform .3s ease; }
   .card:hover{ transform: translateY(-4px); }
-  .card .num{ font-family:var(--font-mono); font-size:0.78rem; color:var(--primary); display:block; margin-bottom:14px; }
-  .card h3{ font-family:var(--font-body); font-weight:600; font-size:1.12rem; margin-bottom:10px; }
-  .card p{ color: var(--ink-soft); font-size:0.97rem; }
+  .card .num{ font-family:var(--font-mono); font-size:0.76rem; color: var(--amber); display:block; margin-bottom:14px; }
+  .card h3{ font-family:var(--font-display); font-weight:500; font-size:1.05rem; margin-bottom:10px; color: var(--ink); }
+  .card p{ color: var(--ink-soft); font-size:0.96rem; }
 
-  /* services variant: slimmer */
-  .svc-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(230px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
-  .svc{ background:var(--paper-raised); padding:24px 22px; display:flex; flex-direction:column; gap:8px; }
-  .svc .num{ font-family:var(--font-mono); font-size:0.74rem; color: var(--primary); }
-  .svc h4{ font-family:var(--font-body); font-weight:600; font-size:1.02rem; }
-  .svc p{ font-size:0.92rem; color: var(--ink-soft); }
+  /* services variant: slimmer, terminal grid */
+  .svc-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(230px,1fr)); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden; }
+  .svc{ background: var(--panel-raised); padding:24px 22px; display:flex; flex-direction:column; gap:8px; }
+  .svc .num{ font-family:var(--font-mono); font-size:0.72rem; color: var(--cyan); }
+  .svc h4{ font-family:var(--font-display); font-weight:500; font-size:0.96rem; color: var(--ink); }
+  .svc p{ font-size:0.9rem; color: var(--ink-soft); }
 
   /* ---------------------------------------------------------------
-     ARQUITECTURA (dark band)
+     ARQUITECTURA
   --------------------------------------------------------------- */
   .flowrow{
-    display:flex; align-items:stretch; gap:0; margin-bottom: 64px;
-    border:1px solid rgba(234,242,242,0.16); border-radius:10px; overflow:hidden;
+    display:flex; align-items:stretch; gap:0; margin-bottom: 60px;
+    border:1px solid var(--line); border-radius:8px; overflow:hidden;
   }
   .flowstep{
     flex:1; min-width: 150px; padding: 26px 18px; text-align:center;
     display:flex; flex-direction:column; align-items:center; gap:12px;
-    border-left:1px solid rgba(234,242,242,0.16); position:relative;
+    border-left:1px solid var(--line-soft); position:relative; background: var(--panel-raised);
   }
   .flowstep:first-child{ border-left:none; }
-  .flowstep svg{ width:30px; height:30px; color: var(--accent); }
-  .flowstep h4{ font-family:var(--font-mono); font-size:0.78rem; letter-spacing:.04em; text-transform:uppercase; color:#fff; }
-  .flowstep p{ font-size:0.82rem; color:#9FBAC6; }
+  .flowstep svg{ width:28px; height:28px; color: var(--cyan); }
+  .flowstep h4{ font-family:var(--font-mono); font-size:0.76rem; letter-spacing:.04em; text-transform:uppercase; color: var(--ink); }
+  .flowstep p{ font-size:0.8rem; color: var(--ink-faint); }
   @media (max-width: 760px){
     .flowrow{ flex-direction:column; }
-    .flowstep{ border-left:none; border-top:1px solid rgba(234,242,242,0.16); }
+    .flowstep{ border-left:none; border-top:1px solid var(--line-soft); }
     .flowstep:first-child{ border-top:none; }
   }
 
-  .diagram-figure{ margin: 0 0 64px; }
-  .diagram-figure svg{ width:100%; height:auto; display:block; }
+  .diagram-figure{ margin: 0 0 60px; }
+  .diagram-figure svg{ width:100%; height:auto; display:block; color: var(--ink-soft); }
   .diagram-figure figcaption{
-    font-family: var(--font-mono); font-size:0.82rem; color:#9FBAC6;
-    margin-top:14px; max-width: 70ch; border-left:2px solid var(--accent); padding-left:14px;
+    font-family: var(--font-mono); font-size:0.8rem; color: var(--ink-faint);
+    margin-top:14px; max-width: 72ch; border-left:2px solid var(--cyan); padding-left:14px;
   }
 
-  .stackrow{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:64px; }
+  .stackrow{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:60px; }
   .stackrow span{
-    font-family: var(--font-mono); font-size:0.8rem; color:#D7E6E9;
-    border:1px solid rgba(234,242,242,0.25); border-radius:999px; padding:8px 16px;
+    font-family: var(--font-mono); font-size:0.78rem; color: var(--ink-soft);
+    border:1px solid var(--line-strong); border-radius:999px; padding:7px 15px;
   }
 
-  .decision-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:18px; margin-bottom:72px; }
-  .decision{
-    border:1px solid rgba(234,242,242,0.16); border-radius:8px; padding:20px;
-    background: rgba(234,242,242,0.03);
-  }
-  .decision .id{ font-family:var(--font-mono); font-size:0.74rem; color: var(--accent); }
-  .decision h4{ font-family:var(--font-body); font-weight:600; font-size:1rem; margin:8px 0 8px; color:#fff; }
-  .decision p{ font-size:0.86rem; color:#9FBAC6; }
+  .decision-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-bottom:68px; }
+  .decision{ padding:20px; }
+  .decision .id{ font-family:var(--font-mono); font-size:0.72rem; color: var(--amber); }
+  .decision h4{ font-family:var(--font-display); font-weight:500; font-size:0.98rem; margin:8px 0 8px; color: var(--ink); }
+  .decision p{ font-size:0.85rem; color: var(--ink-faint); }
 
-  .datasheet-wrap{ overflow-x:auto; border:1px solid rgba(234,242,242,0.16); border-radius:8px; margin-bottom: 44px; }
-  table.datasheet{ width:100%; border-collapse:collapse; font-family: var(--font-mono); font-size:0.82rem; min-width: 560px; }
+  .datasheet-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:8px; margin-bottom: 40px; background: var(--panel-raised); }
+  table.datasheet{ width:100%; border-collapse:collapse; font-family: var(--font-mono); font-size:0.8rem; min-width: 560px; }
   table.datasheet caption{
-    text-align:left; font-family: var(--font-body); font-weight:600; font-size:1rem;
-    padding: 16px 18px 8px; color:#fff;
+    text-align:left; font-family: var(--font-display); font-weight:500; font-size:0.96rem;
+    padding: 16px 18px 8px; color: var(--ink);
   }
   table.datasheet th, table.datasheet td{
-    text-align:left; padding: 11px 16px; border-top:1px solid rgba(234,242,242,0.12);
-    color:#C3D6DB; white-space:nowrap;
+    text-align:left; padding: 11px 16px; border-top:1px solid var(--line-soft);
+    color: var(--ink-soft); white-space:nowrap;
   }
+  table.datasheet tbody tr:hover{ background: var(--panel-hi); }
   table.datasheet td:last-child, table.datasheet th:last-child{ white-space:normal; }
   table.datasheet thead th{
-    color:#9FBAC6; text-transform:uppercase; letter-spacing:.06em; font-size:0.7rem;
-    border-top:none; border-bottom:1px solid rgba(234,242,242,0.2);
+    color: var(--cyan); text-transform:uppercase; letter-spacing:.05em; font-size:0.68rem;
+    border-top:none; border-bottom:1px solid var(--line-strong);
   }
   .tables-grid{ display:grid; grid-template-columns: 1.3fr 1fr; gap:0 24px; }
   @media (max-width: 920px){ .tables-grid{ grid-template-columns:1fr; } }
@@ -371,87 +383,91 @@
   /* ---------------------------------------------------------------
      ESTRATEGIA (canvas + pestel)
   --------------------------------------------------------------- */
-  .estrategia-grid{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:56px; align-items:center; }
+  .estrategia-grid{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:50px; align-items:center; }
   @media (max-width: 880px){ .estrategia-grid{ grid-template-columns:1fr; } }
   .pestel-frame{
-    border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--paper-raised);
-    box-shadow: var(--shadow); cursor: zoom-in; position:relative;
+    overflow:hidden; cursor: zoom-in; position:relative; padding:0; width:100%;
   }
   .pestel-frame img{ width:100%; height:auto; display:block; }
   .pestel-frame .zoomtag{
-    position:absolute; bottom:12px; right:12px; font-family:var(--font-mono); font-size:0.72rem;
-    background: var(--ink); color:#fff; padding:6px 10px; border-radius:4px; opacity:.88;
+    position:absolute; bottom:12px; right:12px; font-family:var(--font-mono); font-size:0.7rem;
+    background: var(--void); color: var(--amber); padding:6px 10px; border-radius:4px; border:1px solid var(--line-strong);
   }
   .quote{
     font-family: var(--font-body); font-style:italic; font-weight:500;
-    font-size: 1.3rem; color: var(--ink); border-left:3px solid var(--primary);
-    padding-left: 20px; margin: 28px 0;
+    font-size: 1.28rem; color: var(--ink); border-left:3px solid var(--amber);
+    padding-left: 20px; margin: 26px 0;
   }
 
   /* ---------------------------------------------------------------
      IMPACTO
   --------------------------------------------------------------- */
-  .stat-row{ display:grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:56px; background:var(--paper-raised); }
-  .stat{ padding: 30px 24px; border-left:1px solid var(--line); }
-  .stat:first-child{ border-left:none; }
-  .stat b{ display:block; font-family:var(--font-display); font-weight:800; font-size:2.6rem; color:var(--primary); font-variant-numeric: tabular-nums; }
-  .stat span{ font-family:var(--font-mono); font-size:0.76rem; color: var(--ink-faint); }
+  .stat-row{ display:grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap:1px; background: var(--line-soft); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden; margin-bottom:56px; }
+  .stat{ padding: 28px 24px; background: var(--panel-raised); }
+  .stat b{ display:block; font-family:var(--font-display); font-weight:800; font-size:2.4rem; color: var(--amber); font-variant-numeric: tabular-nums; }
+  .stat span{ font-family:var(--font-mono); font-size:0.74rem; color: var(--ink-faint); }
   .mv-grid{ display:grid; grid-template-columns:1fr 1fr; gap:40px; }
   @media (max-width: 760px){ .mv-grid{ grid-template-columns:1fr; } }
-  .mv-grid h3{ font-family:var(--font-mono); font-size:0.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--primary); margin-bottom:14px; }
-  .mv-grid p{ color: var(--ink-soft); font-size:1.02rem; }
+  .mv-grid h3{ font-family:var(--font-mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:.07em; color: var(--cyan); margin-bottom:14px; }
+  .mv-grid p{ color: var(--ink-soft); font-size:1.01rem; }
   .mv-grid p + p{ margin-top:12px; }
 
   /* ---------------------------------------------------------------
      EQUIPO
   --------------------------------------------------------------- */
-  .equipo-grid{ display:grid; grid-template-columns: 1fr 1.4fr; gap:56px; }
+  .equipo-grid{ display:grid; grid-template-columns: 1fr 1.4fr; gap:50px; }
   @media (max-width:860px){ .equipo-grid{ grid-template-columns:1fr; } }
   .founders{ display:flex; flex-direction:column; gap:0; border-top:1px solid var(--line); }
   .founder{ display:flex; justify-content:space-between; gap:16px; padding:18px 0; border-bottom:1px solid var(--line); }
-  .founder b{ font-family:var(--font-body); font-weight:600; font-size:1.06rem; }
-  .founder span{ font-family:var(--font-mono); font-size:0.76rem; color:var(--ink-faint); align-self:center; white-space:nowrap; }
-  .org-card{
-    background: var(--ink); color:var(--on-dark); border-radius:10px; padding:30px;
-    box-shadow:var(--shadow);
-  }
-  .org-card dl{ display:grid; grid-template-columns: auto 1fr; gap: 10px 18px; font-size:0.94rem; }
-  .org-card dt{ font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:.06em; color:#9FBAC6; }
-  .org-card dd{ margin:0; color:#E7F1F2; }
+  .founder b{ font-family:var(--font-display); font-weight:500; font-size:1rem; color: var(--ink); }
+  .founder span{ font-family:var(--font-mono); font-size:0.74rem; color: var(--ink-faint); align-self:center; white-space:nowrap; }
+  .org-card{ padding:30px; }
+  .org-card dl{ display:grid; grid-template-columns: auto 1fr; gap: 10px 18px; font-size:0.93rem; }
+  .org-card dt{ font-family:var(--font-mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; color: var(--cyan); }
+  .org-card dd{ margin:0; color: var(--ink-soft); }
 
   /* ---------------------------------------------------------------
      FOOTER
   --------------------------------------------------------------- */
-  footer{ background: var(--ink); color:#9FBAC6; padding: 56px 0 36px; }
-  .foot-top{ display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; margin-bottom: 36px; }
-  .foot-slogan{ font-family: var(--font-body); font-style:italic; font-size:1.2rem; color:#fff; }
-  .foot-bottom{ border-top:1px solid rgba(234,242,242,0.14); padding-top:22px; font-family:var(--font-mono); font-size:0.76rem; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  footer{ background: var(--panel); color: var(--ink-faint); padding: 52px 0 32px; border-top:1px solid var(--line-soft); }
+  .foot-top{ display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; margin-bottom: 32px; }
+  .foot-status{ display:flex; align-items:center; gap:9px; font-family:var(--font-mono); font-size:0.78rem; color: var(--ink-soft); }
+  .foot-slogan{ font-family: var(--font-body); font-style:italic; font-size:1.15rem; color: var(--ink); margin-bottom:6px; }
+  .foot-bottom{ border-top:1px solid var(--line-soft); padding-top:20px; font-family:var(--font-mono); font-size:0.74rem; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color: var(--ink-faint); }
 
   /* ---------------------------------------------------------------
      LIGHTBOX
   --------------------------------------------------------------- */
   .lightbox{
-    position:fixed; inset:0; background: rgba(6,14,20,0.86); z-index:100;
+    position:fixed; inset:0; background: rgba(4,7,8,0.9); z-index:100;
     display:flex; align-items:center; justify-content:center; padding: 40px 20px;
     backdrop-filter: blur(4px);
   }
   .lightbox[hidden]{ display:none; }
-  .lightbox img{ max-width: min(94vw, 680px); max-height: 90vh; border-radius: 8px; box-shadow: 0 40px 80px -30px rgba(0,0,0,0.6); }
+  .lightbox img{ max-width: min(94vw, 680px); max-height: 90vh; border-radius: 6px; border:1px solid var(--line-strong); box-shadow: 0 40px 90px -30px rgba(0,0,0,0.7); }
   .lightbox button{
-    position:absolute; top: 22px; right: 28px; background:none; border:1px solid rgba(255,255,255,0.4);
-    color:#fff; font-family: var(--font-mono); font-size:0.78rem; padding: 8px 14px; border-radius:4px; cursor:pointer;
+    position:absolute; top: 22px; right: 28px; background:none; border:1px solid var(--line-strong);
+    color: var(--ink); font-family: var(--font-mono); font-size:0.76rem; padding: 8px 14px; border-radius:4px; cursor:pointer;
   }
-  .lightbox button:hover{ border-color:#fff; }
+  .lightbox button:hover{ border-color: var(--amber); color: var(--amber); }
 
-  :focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
+  :focus-visible{ outline: 2px solid var(--cyan); outline-offset: 3px; }
 </style>
 </head>
 <body>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>● LIVE</span> <b>ESTADO</b> ABASTECIMIENTO_TANQUE &nbsp;·&nbsp; <b>CONTROL</b> EJECUTADO EN SITIO — DA-01 &nbsp;·&nbsp; <b>INDICADORES</b> 6 EN TIEMPO REAL &nbsp;·&nbsp; <b>PRONÓSTICO</b> OPEN-METEO · ACTUALIZA CADA HORA &nbsp;·&nbsp; <b>RESPALDO LOCAL</b> SQLITE — ALMACÉN Y REENVÍO &nbsp;·&nbsp; <b>BROKER</b> MQTT · TLS 8883 &nbsp;·&nbsp;
+    <span>● LIVE</span> <b>ESTADO</b> ABASTECIMIENTO_TANQUE &nbsp;·&nbsp; <b>CONTROL</b> EJECUTADO EN SITIO — DA-01 &nbsp;·&nbsp; <b>INDICADORES</b> 6 EN TIEMPO REAL &nbsp;·&nbsp; <b>PRONÓSTICO</b> OPEN-METEO · ACTUALIZA CADA HORA &nbsp;·&nbsp; <b>RESPALDO LOCAL</b> SQLITE — ALMACÉN Y REENVÍO &nbsp;·&nbsp; <b>BROKER</b> MQTT · TLS 8883 &nbsp;·&nbsp;
+  </div>
+</div>
+
 <header class="nav">
   <div class="nav-inner">
     <a class="brand" href="#hero">
       <span class="brand-chip"><img src="logo.png" alt="SICAL"></span>
-      <span class="brand-word">SICAL S.A.S.</span>
+      <span class="brand-word">SICAL <em>S.A.S.</em></span>
     </a>
     <nav class="navlinks" id="navlinks">
       <a href="#problema" data-sec="problema">01 · Problema</a>
@@ -477,6 +493,7 @@
         <div class="hero-logo"><img src="logo.png" alt="Logotipo SICAL: nube, gota y tanque"></div>
         <div class="eyebrow"><span class="n">§00</span> Proyecto académico — Universidad Piloto de Colombia · Ingeniería de Sistemas</div>
       </div>
+      <p class="boot-line"><span class="live-dot"></span> sical_os v1.0 — consola de operación hídrica</p>
       <h1>El agua que cae, <em>trabaja.</em></h1>
       <p class="hero-sub">SICAL capta el agua lluvia de las cubiertas de Bogotá, la trata y la entrega a los usos no potables de la edificación — y usa ese mismo circuito para enfriar las salas de servidores. Todo instrumentado, todo medido, todo auditable desde un tablero.</p>
       <div class="hero-ctas">
@@ -495,7 +512,7 @@
   <!-- ============================================================
        01 · PROBLEMA
   ============================================================= -->
-  <section id="problema" class="band ticked">
+  <section id="problema" class="band bracketed">
     <div class="container">
       <div class="eyebrow"><span class="n">§01</span> El problema</div>
       <div class="section-head">
@@ -503,7 +520,7 @@
         <p>El estudio de mercados se levantó sobre el corredor de la Av. Calle 26, en Bogotá D.C. Quince planos y problemas identificados muestran la misma historia: cubiertas que evacúan agua lluvia sin aprovecharla, una red que puede saturarse, y edificios cuya carga de cómputo exige enfriamiento.</p>
       </div>
       <div class="problema-grid">
-        <dl class="locale">
+        <dl class="locale panel">
           <dt>Coordenadas del sector</dt>
           <dd>4,656347° N · 74,106513° O</dd>
           <dt>Corredor</dt>
@@ -516,7 +533,7 @@
           <dd>Acueducto, alcantarillado y 4G/5G cubren la totalidad del sector</dd>
         </dl>
         <div class="prob-groups">
-          <article class="prob-group">
+          <article class="prob-group panel">
             <header><h3>Ingeniería civil</h3><span class="count">problemas 1–9</span></header>
             <ul>
               <li>Mucha superficie impermeable y una sola franja verde: la escorrentía no tiene dónde retenerse.</li>
@@ -525,14 +542,14 @@
               <li>Se usa agua potable en riego, aseo y enfriamiento, usos que no la requieren.</li>
             </ul>
           </article>
-          <article class="prob-group">
+          <article class="prob-group panel">
             <header><h3>Civil + sistemas</h3><span class="count">problemas 10–11</span></header>
             <ul>
               <li>Un circuito de agua cerca de los servidores puede fallar y dañar los equipos sin detección de fugas.</li>
               <li>Sin automatización, la distribución entre tanque, tratamiento y servidores depende de operación manual.</li>
             </ul>
           </article>
-          <article class="prob-group">
+          <article class="prob-group panel">
             <header><h3>Ingeniería de sistemas</h3><span class="count">problemas 12–15</span></header>
             <ul>
               <li>Los servidores generan calor continuo cuyo enfriamiento consume agua y energía.</li>
@@ -549,7 +566,7 @@
   <!-- ============================================================
        02 · PROPUESTA DE VALOR
   ============================================================= -->
-  <section id="propuesta" class="band ticked reveal">
+  <section id="propuesta" class="band bracketed reveal">
     <div class="container">
       <div class="eyebrow"><span class="n">§02</span> Propuesta de valor</div>
       <div class="section-head">
@@ -557,20 +574,20 @@
         <p>«La lluvia se capta. El sistema la trata. El servidor la aprovecha. El dato lo demuestra.» SICAL responde por la hidráulica, la térmica, la civil, la electrónica y el software de cada instalación.</p>
       </div>
       <div class="cards">
-        <div class="card"><span class="num">§02.1</span><h3>Doble ahorro, una inversión</h3><p>El mismo circuito atiende los usos no potables de la edificación y el enfriamiento de los servidores.</p></div>
-        <div class="card"><span class="num">§02.2</span><h3>Integración completa</h3><p>Una sola empresa responde por hidráulica, térmica, civil, electrónica y software — nada que coordinar entre proveedores.</p></div>
-        <div class="card"><span class="num">§02.3</span><h3>Medición verificable</h3><p>Agua captada, agua entregada, turbiedad removida, escorrentía retenida y calor disipado, publicados en un tablero.</p></div>
-        <div class="card"><span class="num">§02.4</span><h3>Operación automática</h3><p>El control decide con el pronóstico de lluvia y la demanda; el usuario no opera nada.</p></div>
-        <div class="card"><span class="num">§02.5</span><h3>A la medida</h3><p>Tanque, tren de tratamiento y capacidad de enfriamiento se calculan con la precipitación y la carga térmica reales.</p></div>
-        <div class="card"><span class="num">§02.6</span><h3>Acompañamiento posventa</h3><p>Plan de mantenimiento preventivo y correctivo, con reposición programada de los medios filtrantes.</p></div>
+        <div class="card panel"><span class="num">§02.1</span><h3>Doble ahorro, una inversión</h3><p>El mismo circuito atiende los usos no potables de la edificación y el enfriamiento de los servidores.</p></div>
+        <div class="card panel"><span class="num">§02.2</span><h3>Integración completa</h3><p>Una sola empresa responde por hidráulica, térmica, civil, electrónica y software — nada que coordinar entre proveedores.</p></div>
+        <div class="card panel"><span class="num">§02.3</span><h3>Medición verificable</h3><p>Agua captada, agua entregada, turbiedad removida, escorrentía retenida y calor disipado, publicados en un tablero.</p></div>
+        <div class="card panel"><span class="num">§02.4</span><h3>Operación automática</h3><p>El control decide con el pronóstico de lluvia y la demanda; el usuario no opera nada.</p></div>
+        <div class="card panel"><span class="num">§02.5</span><h3>A la medida</h3><p>Tanque, tren de tratamiento y capacidad de enfriamiento se calculan con la precipitación y la carga térmica reales.</p></div>
+        <div class="card panel"><span class="num">§02.6</span><h3>Acompañamiento posventa</h3><p>Plan de mantenimiento preventivo y correctivo, con reposición programada de los medios filtrantes.</p></div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       03 · ARQUITECTURA (dark band)
+       03 · ARQUITECTURA
   ============================================================= -->
-  <section id="arquitectura" class="band band-dark ticked">
+  <section id="arquitectura" class="band bracketed">
     <div class="container">
       <div class="eyebrow"><span class="n">§03</span> Cómo funciona</div>
       <div class="section-head">
@@ -609,60 +626,52 @@
               <path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/>
             </marker>
           </defs>
-          <!-- boundary boxes -->
           <rect x="40" y="60" width="380" height="300" rx="6" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 5"/>
-          <text x="60" y="90" font-family="IBM Plex Mono" font-size="12" letter-spacing="1" fill="currentColor" opacity="0.75">EDIFICACIÓN DEL CLIENTE</text>
+          <text x="60" y="90" font-family="JetBrains Mono" font-size="12" letter-spacing="1" fill="currentColor" opacity="0.75">EDIFICACIÓN DEL CLIENTE</text>
 
           <rect x="540" y="60" width="380" height="300" rx="6" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 5"/>
-          <text x="560" y="90" font-family="IBM Plex Mono" font-size="12" letter-spacing="1" fill="currentColor" opacity="0.75">SERVIDOR / NUBE</text>
+          <text x="560" y="90" font-family="JetBrains Mono" font-size="12" letter-spacing="1" fill="currentColor" opacity="0.75">SERVIDOR / NUBE</text>
 
-          <!-- site nodes -->
           <rect x="70" y="120" width="300" height="56" rx="5" fill="none" stroke="currentColor"/>
-          <text x="90" y="144" font-family="Source Serif 4" font-size="14" fill="currentColor">Controlador de campo</text>
-          <text x="90" y="162" font-family="IBM Plex Mono" font-size="11" fill="currentColor" opacity="0.65">Arduino UNO R3 — firmware C++</text>
+          <text x="90" y="144" font-family="Literata" font-size="14" fill="currentColor">Controlador de campo</text>
+          <text x="90" y="162" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.65">Arduino UNO R3 — firmware C++</text>
 
           <rect x="70" y="200" width="300" height="56" rx="5" fill="none" stroke="currentColor"/>
-          <text x="90" y="224" font-family="Source Serif 4" font-size="14" fill="currentColor">Pasarela de comunicación</text>
-          <text x="90" y="242" font-family="IBM Plex Mono" font-size="11" fill="currentColor" opacity="0.65">Node.js — serialport + MQTT.js</text>
+          <text x="90" y="224" font-family="Literata" font-size="14" fill="currentColor">Pasarela de comunicación</text>
+          <text x="90" y="242" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.65">Node.js — serialport + MQTT.js</text>
 
           <rect x="70" y="280" width="300" height="56" rx="5" fill="none" stroke="currentColor"/>
-          <text x="90" y="304" font-family="Source Serif 4" font-size="14" fill="currentColor">Respaldo local</text>
-          <text x="90" y="322" font-family="IBM Plex Mono" font-size="11" fill="currentColor" opacity="0.65">SQLite — almacén y reenvío</text>
+          <text x="90" y="304" font-family="Literata" font-size="14" fill="currentColor">Respaldo local</text>
+          <text x="90" y="322" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.65">SQLite — almacén y reenvío</text>
 
-          <!-- cloud nodes -->
           <rect x="570" y="110" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="140" font-family="Source Serif 4" font-size="14" fill="currentColor">Broker MQTT · Mosquitto</text>
+          <text x="590" y="140" font-family="Literata" font-size="14" fill="currentColor">Broker MQTT · Mosquitto</text>
 
           <rect x="570" y="180" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="210" font-family="Source Serif 4" font-size="14" fill="currentColor">Backend · Node.js + Express</text>
+          <text x="590" y="210" font-family="Literata" font-size="14" fill="currentColor">Backend · Node.js + Express</text>
 
           <rect x="570" y="250" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="280" font-family="Source Serif 4" font-size="14" fill="currentColor">PostgreSQL + TimescaleDB</text>
+          <text x="590" y="280" font-family="Literata" font-size="14" fill="currentColor">PostgreSQL + TimescaleDB</text>
 
           <rect x="570" y="320" width="320" height="50" rx="5" fill="none" stroke="currentColor"/>
-          <text x="590" y="350" font-family="Source Serif 4" font-size="14" fill="currentColor">App web · React + Chart.js</text>
+          <text x="590" y="350" font-family="Literata" font-size="14" fill="currentColor">App web · React + Chart.js</text>
 
-          <!-- local wiring -->
           <line x1="220" y1="176" x2="220" y2="200" stroke="currentColor" marker-end="url(#arrowC)"/>
-          <text x="232" y="192" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.7">USB · JSON 115200 bps</text>
+          <text x="232" y="192" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">USB · JSON 115200 bps</text>
           <path d="M220 256 C 220 272, 340 272, 340 256" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
           <path d="M340 256 C 340 272, 220 280, 220 280" fill="none" stroke="currentColor" stroke-opacity="0.3" marker-end="url(#arrowC)"/>
 
-          <!-- crossing arrow: pasarela -> broker -->
-          <path d="M370 222 C 460 222, 460 135, 570 135" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrowC)"/>
-          <text x="400" y="150" font-family="IBM Plex Mono" font-size="11" fill="currentColor">MQTT · TLS 8883</text>
+          <path d="M370 222 C 460 222, 460 135, 570 135" fill="none" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrowC)"/>
+          <text x="400" y="150" font-family="JetBrains Mono" font-size="11" fill="currentColor">MQTT · TLS 8883</text>
 
-          <!-- consigna back -->
           <path d="M570 205 C 460 205, 460 230, 370 230" fill="none" stroke="currentColor" stroke-opacity="0.55" marker-end="url(#arrowC)"/>
-          <text x="400" y="252" font-family="IBM Plex Mono" font-size="11" fill="currentColor" opacity="0.75">consigna · cada hora</text>
+          <text x="400" y="252" font-family="JetBrains Mono" font-size="11" fill="currentColor" opacity="0.75">consigna · cada hora</text>
 
-          <!-- internal cloud chain -->
           <line x1="730" y1="160" x2="730" y2="180" stroke="currentColor" marker-end="url(#arrowC)"/>
           <line x1="730" y1="230" x2="730" y2="250" stroke="currentColor" marker-end="url(#arrowC)"/>
           <line x1="730" y1="300" x2="730" y2="320" stroke="currentColor" marker-end="url(#arrowC)"/>
 
-          <!-- callout -->
-          <text x="60" y="400" font-family="IBM Plex Mono" font-size="12" fill="var(--accent)">→ el corte de fugas (EV-3) se decide en el Arduino: no depende de Internet (decisión DA-01).</text>
+          <text x="60" y="400" font-family="JetBrains Mono" font-size="12" fill="var(--amber)">→ el corte de fugas (EV-3) se decide en el Arduino: no depende de Internet (decisión DA-01).</text>
         </svg>
         <figcaption>Figura A. El control se ejecuta en el sitio; la nube solo calcula la consigna, guarda los datos y muestra el tablero — si se cae la conexión, el sistema sigue operando y protegiendo los equipos.</figcaption>
       </figure>
@@ -689,65 +698,58 @@
             </marker>
           </defs>
 
-          <!-- nodes: top row -->
           <rect x="40" y="40" width="220" height="64" rx="6" fill="none" stroke="currentColor"/>
-          <text x="150" y="77" text-anchor="middle" font-family="IBM Plex Mono" font-size="12.5" fill="currentColor">INICIALIZANDO</text>
+          <text x="150" y="77" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" fill="currentColor">INICIALIZANDO</text>
 
           <rect x="370" y="40" width="220" height="64" rx="6" fill="none" stroke="currentColor" stroke-width="1.6"/>
-          <text x="480" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="currentColor">ABASTECIMIENTO</text>
-          <text x="480" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="currentColor">_TANQUE</text>
+          <text x="480" y="72" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">ABASTECIMIENTO</text>
+          <text x="480" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">_TANQUE</text>
 
           <rect x="700" y="40" width="220" height="64" rx="6" fill="none" stroke="currentColor"/>
-          <text x="810" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="currentColor">DESCARGA</text>
-          <text x="810" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="currentColor">_PREVENTIVA</text>
+          <text x="810" y="72" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">DESCARGA</text>
+          <text x="810" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">_PREVENTIVA</text>
 
-          <!-- bottom row -->
           <rect x="40" y="330" width="220" height="64" rx="6" fill="none" stroke="currentColor"/>
-          <text x="150" y="358" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="currentColor">ABASTECIMIENTO</text>
-          <text x="150" y="374" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="currentColor">_RED</text>
+          <text x="150" y="358" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">ABASTECIMIENTO</text>
+          <text x="150" y="374" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="currentColor">_RED</text>
 
           <rect x="370" y="330" width="220" height="64" rx="6" fill="none" stroke="var(--alarm)"/>
-          <text x="480" y="368" text-anchor="middle" font-family="IBM Plex Mono" font-size="12.5" fill="var(--alarm)">EMERGENCIA_FUGA</text>
+          <text x="480" y="368" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" fill="var(--alarm)">EMERGENCIA_FUGA</text>
 
           <rect x="700" y="330" width="220" height="64" rx="6" fill="none" stroke="var(--alarm)"/>
-          <text x="810" y="368" text-anchor="middle" font-family="IBM Plex Mono" font-size="12.5" fill="var(--alarm)">FALLA_SENSOR</text>
+          <text x="810" y="368" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" fill="var(--alarm)">FALLA_SENSOR</text>
 
-          <!-- init -> tanque -->
           <line x1="260" y1="72" x2="370" y2="72" stroke="currentColor" marker-end="url(#arrowS)"/>
-          <text x="265" y="62" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.75">sensores OK</text>
+          <text x="265" y="62" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.75">sensores OK</text>
 
-          <!-- tanque -> descarga -->
           <line x1="590" y1="72" x2="700" y2="72" stroke="currentColor" marker-end="url(#arrowS)"/>
-          <text x="600" y="62" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.75">lluvia prevista</text>
+          <text x="600" y="62" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.75">lluvia prevista</text>
           <path d="M700 90 C 640 110, 640 110, 590 90" fill="none" stroke="currentColor" stroke-opacity="0.55" marker-end="url(#arrowS)"/>
-          <text x="612" y="122" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.7">nivel = consigna</text>
+          <text x="612" y="122" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">nivel = consigna</text>
 
-          <!-- tanque <-> red -->
           <path d="M440 104 C 300 190, 230 230, 170 330" fill="none" stroke="currentColor" marker-end="url(#arrowS)"/>
-          <text x="205" y="230" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.8">nivel bajo / turbio</text>
+          <text x="205" y="230" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.8">nivel bajo / turbio</text>
           <path d="M260 345 C 330 280, 380 200, 450 115" fill="none" stroke="currentColor" stroke-opacity="0.55" marker-end="url(#arrowS)"/>
-          <text x="275" y="260" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.7">nivel y calidad OK</text>
+          <text x="275" y="260" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">nivel y calidad OK</text>
 
-          <!-- tanque -> fuga / falla (alarm, dashed) -->
           <line x1="480" y1="104" x2="480" y2="330" stroke="var(--alarm)" stroke-dasharray="5 5" marker-end="url(#arrowA)"/>
-          <text x="490" y="220" font-family="IBM Plex Mono" font-size="10" fill="var(--alarm)">fuga detectada</text>
+          <text x="490" y="220" font-family="JetBrains Mono" font-size="10" fill="var(--alarm)">fuga detectada</text>
 
           <path d="M590 95 C 700 180, 740 230, 790 330" fill="none" stroke="var(--alarm)" stroke-dasharray="5 5" marker-end="url(#arrowA)"/>
-          <text x="690" y="225" font-family="IBM Plex Mono" font-size="10" fill="var(--alarm)">lectura inválida ×3</text>
+          <text x="690" y="225" font-family="JetBrains Mono" font-size="10" fill="var(--alarm)">lectura inválida ×3</text>
 
-          <!-- rearme back to inicializando -->
           <path d="M370 362 C 230 420, 180 420, 110 394" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-dasharray="2 4" marker-end="url(#arrowS)"/>
           <path d="M700 362 C 400 440, 220 430, 150 400" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-dasharray="2 4" marker-end="url(#arrowS)"/>
-          <text x="330" y="440" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="currentColor" opacity="0.7">rearme manual → INICIALIZANDO</text>
+          <text x="330" y="440" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="currentColor" opacity="0.7">rearme manual → INICIALIZANDO</text>
         </svg>
         <figcaption>Figura B. Transiciones principales del controlador, simplificadas desde el estado de operación normal. Las líneas discontinuas en naranja son las dos rutas de alarma; cualquiera exige rearme manual.</figcaption>
       </figure>
 
       <div class="decision-grid reveal">
-        <div class="decision"><span class="id">DA-01</span><h4>Control en el sitio</h4><p>La nube calcula la consigna, guarda los datos y muestra el tablero — nunca acciona las válvulas. Así la protección contra fugas no depende de la red.</p></div>
-        <div class="decision"><span class="id">DA-05</span><h4>PostgreSQL + TimescaleDB</h4><p>Series de tiempo con SQL estándar y agregados automáticos por hora y por día, en el mismo motor que sitios, usuarios y alarmas.</p></div>
-        <div class="decision"><span class="id">DA-07</span><h4>Pronóstico vía Open-Meteo</h4><p>Precipitación hora a hora para las coordenadas del predio, sin llave de acceso para uso no comercial — clave para calcular la consigna de nivel.</p></div>
-        <div class="decision"><span class="id">DA-08</span><h4>Docker Compose</h4><p>El mismo archivo de despliegue pasa sin cambios del PC del equipo, en la maqueta, a un servidor en la nube en producción.</p></div>
+        <div class="decision panel"><span class="id">DA-01</span><h4>Control en el sitio</h4><p>La nube calcula la consigna, guarda los datos y muestra el tablero — nunca acciona las válvulas. Así la protección contra fugas no depende de la red.</p></div>
+        <div class="decision panel"><span class="id">DA-05</span><h4>PostgreSQL + TimescaleDB</h4><p>Series de tiempo con SQL estándar y agregados automáticos por hora y por día, en el mismo motor que sitios, usuarios y alarmas.</p></div>
+        <div class="decision panel"><span class="id">DA-07</span><h4>Pronóstico vía Open-Meteo</h4><p>Precipitación hora a hora para las coordenadas del predio, sin llave de acceso para uso no comercial — clave para calcular la consigna de nivel.</p></div>
+        <div class="decision panel"><span class="id">DA-08</span><h4>Docker Compose</h4><p>El mismo archivo de despliegue pasa sin cambios del PC del equipo, en la maqueta, a un servidor en la nube en producción.</p></div>
       </div>
 
       <div class="tables-grid">
@@ -802,7 +804,7 @@
   <!-- ============================================================
        04 · SERVICIOS
   ============================================================= -->
-  <section id="servicios" class="band ticked reveal">
+  <section id="servicios" class="band bracketed reveal">
     <div class="container">
       <div class="eyebrow"><span class="n">§04</span> Servicios</div>
       <div class="section-head">
@@ -825,7 +827,7 @@
   <!-- ============================================================
        05 · ESTRATEGIA (Canvas + PESTEL)
   ============================================================= -->
-  <section id="estrategia" class="band ticked reveal">
+  <section id="estrategia" class="band bracketed reveal">
     <div class="container">
       <div class="eyebrow"><span class="n">§05</span> Análisis estratégico</div>
       <div class="section-head">
@@ -833,7 +835,7 @@
         <p>El análisis interno (Canvas) y externo (PESTEL) que sustenta la prefactibilidad del proyecto.</p>
       </div>
       <div class="estrategia-grid">
-        <button class="pestel-frame" id="openLightbox" aria-label="Ampliar el análisis Canvas y PESTEL">
+        <button class="pestel-frame panel" id="openLightbox" aria-label="Ampliar el análisis Canvas y PESTEL">
           <img src="pestel.png" alt="Análisis Canvas (socios clave, actividades, propuesta de valor, relación con usuarios, canales, segmentos, recursos clave, estructura de costos, fuentes de ingreso) y PESTEL (político, económico, social, tecnológico, ecológico, legal) del proyecto SICAL S.A.S.">
           <span class="zoomtag">↗ ampliar</span>
         </button>
@@ -849,7 +851,7 @@
   <!-- ============================================================
        06 · IMPACTO
   ============================================================= -->
-  <section id="impacto" class="band ticked reveal">
+  <section id="impacto" class="band bracketed reveal">
     <div class="container">
       <div class="eyebrow"><span class="n">§06</span> Impacto y visión</div>
       <div class="section-head">
@@ -878,7 +880,7 @@
   <!-- ============================================================
        07 · EQUIPO
   ============================================================= -->
-  <section id="equipo" class="band ticked reveal">
+  <section id="equipo" class="band bracketed reveal">
     <div class="container">
       <div class="eyebrow"><span class="n">§07</span> Equipo</div>
       <div class="section-head">
@@ -892,7 +894,7 @@
             <li class="founder"><b>Paula Andrea Villada Álvarez</b><span>Fundadora</span></li>
           </ul>
         </div>
-        <div class="org-card">
+        <div class="org-card panel">
           <dl>
             <dt>Razón social</dt><dd>SICAL S.A.S. — Sociedad por Acciones Simplificada, Ley 1258 de 2008</dd>
             <dt>Domicilio</dt><dd>Bogotá D.C., Colombia</dd>
@@ -910,7 +912,10 @@
 <footer>
   <div class="container">
     <div class="foot-top">
-      <p class="foot-slogan">«El agua que cae, trabaja.»</p>
+      <div>
+        <p class="foot-slogan">«El agua que cae, trabaja.»</p>
+        <p class="foot-status"><span class="live-dot"></span> sistema en línea — consola de operación hídrica</p>
+      </div>
       <span class="brand-chip"><img src="logo.png" alt="SICAL"></span>
     </div>
     <div class="foot-bottom">
@@ -958,7 +963,6 @@
         });
       }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
       revealEls.forEach(function(el){ ro.observe(el); });
-      // safety net: guarantee visibility even if observer never fires
       setTimeout(function(){ revealEls.forEach(function(el){ el.classList.add("is-visible"); }); }, 3000);
     }
   }catch(e){
@@ -1033,15 +1037,16 @@
           len: 14 + Math.random() * 22,
           speed: 2.4 + Math.random() * 3.2,
           drift: 0.5 + Math.random() * 0.4,
-          alpha: 0.12 + Math.random() * 0.22
+          alpha: 0.1 + Math.random() * 0.2,
+          amber: Math.random() < 0.22
         };
       }
       function tick(){
         ctx.clearRect(0,0,W,H);
-        ctx.strokeStyle = "#3FE0D2";
         ctx.lineCap = "round";
         for(var i=0;i<drops.length;i++){
           var d = drops[i];
+          ctx.strokeStyle = d.amber ? "#ffb224" : "#49e3c6";
           ctx.globalAlpha = d.alpha;
           ctx.lineWidth = 1.1;
           ctx.beginPath();
